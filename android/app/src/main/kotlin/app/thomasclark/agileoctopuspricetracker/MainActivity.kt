@@ -1,4 +1,4 @@
-package com.example.agile_octopus_price_tracker
+package app.thomasclark.agileoctopuspricetracker
 
 import io.flutter.embedding.android.FlutterActivity
 

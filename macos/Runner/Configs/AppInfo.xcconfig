@@ -8,7 +8,7 @@
 PRODUCT_NAME = agile_octopus_price_tracker
 
 // The application's bundle identifier
-PRODUCT_BUNDLE_IDENTIFIER = com.example.agileOctopusPriceTracker
+PRODUCT_BUNDLE_IDENTIFIER = app.thomasclark.agileoctopuspricetracker
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 com.example. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 Thomas Clark. All rights reserved.
