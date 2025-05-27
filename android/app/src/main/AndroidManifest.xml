@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="agile_octopus_price_tracker"
+        android:label="Price Tracker for Agile Octopus"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

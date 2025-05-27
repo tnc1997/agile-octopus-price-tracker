@@ -1,6 +1,6 @@
 {
-    "name": "agile_octopus_price_tracker",
-    "short_name": "agile_octopus_price_tracker",
+    "name": "Price Tracker for Agile Octopus",
+    "short_name": "Price Tracker for Agile Octopus",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
