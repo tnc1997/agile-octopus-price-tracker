@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
@@ -88,6 +90,44 @@ class OctopusEnergyApiClientException implements Exception {
     } else {
       return response;
     }
+  }
+}
+
+class ProductsService {
+  final http.Client _client;
+
+  const ProductsService({
+    required http.Client client,
+  }) : _client = client;
+
+  Future<PaginatedHistoricalChargeList> listElectricityTariffStandardUnitRates(
+    String productCode,
+    String tariffCode, {
+    int? page,
+    int? pageSize,
+    DateTime? periodFrom,
+    DateTime? periodTo,
+  }) async {
+    final response = await _client.get(
+      Uri.https(
+        'api.octopus.energy',
+        '/v1/products/$productCode/electricity-tariffs/$tariffCode/standard-unit-rates',
+        {
+          if (page != null) 'page': page,
+          if (pageSize != null) 'page_size': pageSize,
+          if (periodFrom != null) 'period_from': periodFrom.toIso8601String(),
+          if (periodTo != null) 'period_to': periodTo.toIso8601String(),
+        },
+      ),
+    );
+
+    OctopusEnergyApiClientException.checkIsSuccessStatusCode(response);
+
+    return PaginatedHistoricalChargeList.fromJson(
+      json.decode(
+        response.body,
+      ),
+    );
   }
 }
 
