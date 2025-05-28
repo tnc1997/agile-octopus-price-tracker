@@ -78,6 +78,22 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+class OctopusEnergyApiClient {
+  final http.Client _client;
+
+  ProductsService? _products;
+
+  OctopusEnergyApiClient({
+    http.Client? client,
+  }) : _client = client ?? http.Client();
+
+  ProductsService get products {
+    return _products ??= ProductsService(
+      client: _client,
+    );
+  }
+}
+
 class OctopusEnergyApiClientException implements Exception {
   /// Checks that the [response] has a success status code.
   ///
