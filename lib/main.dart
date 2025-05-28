@@ -12,7 +12,17 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Demo',
       theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: const ColorScheme(
+          brightness: Brightness.dark,
+          primary: Color(0xfff050f8),
+          onPrimary: Color(0xff100030),
+          secondary: Color(0xff5840ff),
+          onSecondary: Color(0xffffffff),
+          error: Color(0xffff3e68),
+          onError: Color(0xffffffff),
+          surface: Color(0xff100030),
+          onSurface: Color(0xffffffff),
+        ),
       ),
       home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
