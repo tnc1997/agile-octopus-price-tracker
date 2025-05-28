@@ -75,6 +75,55 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
+class PaginatedHistoricalChargeList {
+  final int count;
+  final List<HistoricalCharge> results;
+  final Uri? next;
+  final Uri? previous;
+
+  const PaginatedHistoricalChargeList({
+    required this.count,
+    required this.results,
+    this.next,
+    this.previous,
+  });
+
+  factory PaginatedHistoricalChargeList.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final next = json['next'];
+    final previous = json['previous'];
+
+    return PaginatedHistoricalChargeList(
+      count: json['count'],
+      results: List<HistoricalCharge>.from(
+        json['results'].map(
+          (result) {
+            return HistoricalCharge.fromJson(result);
+          },
+        ),
+      ),
+      next: next != null ? Uri.parse(next) : null,
+      previous: previous != null ? Uri.parse(previous) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'count': count,
+      'results': List<dynamic>.from(
+        results.map(
+          (result) {
+            return result.toJson();
+          },
+        ),
+      ),
+      'next': next,
+      'previous': previous,
+    };
+  }
+}
+
 class HistoricalCharge {
   final String? paymentMethod;
   final DateTime? validFrom;
