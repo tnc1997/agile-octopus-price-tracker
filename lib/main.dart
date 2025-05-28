@@ -74,3 +74,44 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 }
+
+class HistoricalCharge {
+  final String? paymentMethod;
+  final DateTime? validFrom;
+  final DateTime? validTo;
+  final double valueExcVat;
+  final double valueIncVat;
+
+  const HistoricalCharge({
+    this.paymentMethod,
+    this.validFrom,
+    this.validTo,
+    required this.valueExcVat,
+    required this.valueIncVat,
+  });
+
+  factory HistoricalCharge.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final validFrom = json['valid_from'];
+    final validTo = json['valid_to'];
+
+    return HistoricalCharge(
+      paymentMethod: json['payment_method'],
+      valueExcVat: json['value_exc_vat'].toDouble(),
+      valueIncVat: json['value_inc_vat'].toDouble(),
+      validFrom: validFrom != null ? DateTime.parse(validFrom) : null,
+      validTo: validTo != null ? DateTime.parse(validTo) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'payment_method': paymentMethod,
+      'value_exc_vat': valueExcVat,
+      'value_inc_vat': valueIncVat,
+      'valid_from': validFrom?.toIso8601String(),
+      'valid_to': validTo?.toIso8601String(),
+    };
+  }
+}
