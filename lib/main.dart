@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(const MyApp());
@@ -72,6 +73,21 @@ class _MyHomePageState extends State<MyHomePage> {
         child: const Icon(Icons.add),
       ),
     );
+  }
+}
+
+class OctopusEnergyApiClientException implements Exception {
+  /// Checks that the [response] has a success status code.
+  ///
+  /// Throws an [OctopusEnergyApiClientException] if the [response] does not have a success status code.
+  static http.Response checkIsSuccessStatusCode(
+    http.Response response,
+  ) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw OctopusEnergyApiClientException();
+    } else {
+      return response;
+    }
   }
 }
 
