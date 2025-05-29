@@ -137,7 +137,9 @@ class HistoricalChargeListTile extends StatelessWidget {
         ),
       ),
       subtitle: Text(
-        '${charge.valueIncVat.toString()}p/kWh',
+        NumberFormat('0.00p/kWh').format(
+          charge.valueIncVat,
+        ),
       ),
     );
   }
