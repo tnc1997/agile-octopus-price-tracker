@@ -141,8 +141,8 @@ class ProductsService {
         'api.octopus.energy',
         '/v1/products/$productCode/electricity-tariffs/$tariffCode/standard-unit-rates',
         {
-          if (page != null) 'page': page,
-          if (pageSize != null) 'page_size': pageSize,
+          if (page != null) 'page': page.toString(),
+          if (pageSize != null) 'page_size': pageSize.toString(),
           if (periodFrom != null) 'period_from': periodFrom.toIso8601String(),
           if (periodTo != null) 'period_to': periodTo.toIso8601String(),
         },
