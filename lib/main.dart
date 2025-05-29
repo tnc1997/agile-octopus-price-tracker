@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -131,7 +132,9 @@ class HistoricalChargeListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(
-        charge.validFrom?.toLocal().toString() ?? '',
+        DateFormat('Hm').format(
+          charge.validFrom ?? DateTime(0, 0, 0),
+        ),
       ),
       subtitle: Text(
         '${charge.valueIncVat.toString()}p/kWh',
