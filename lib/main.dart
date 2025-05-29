@@ -86,13 +86,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
               return ListView.builder(
                 itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(
-                      data.results[index].validFrom?.toLocal().toString() ?? '',
-                    ),
-                    subtitle: Text(
-                      '${data.results[index].valueIncVat.toString()}p/kWh',
-                    ),
+                  return HistoricalChargeListTile(
+                    charge: data.results[index],
                   );
                 },
                 itemCount: data.results.length,
@@ -120,6 +115,27 @@ class _MyHomePageState extends State<MyHomePage> {
       page: 1,
       pageSize: 96,
       periodFrom: DateTime.now().toUtc(),
+    );
+  }
+}
+
+class HistoricalChargeListTile extends StatelessWidget {
+  const HistoricalChargeListTile({
+    super.key,
+    required this.charge,
+  });
+
+  final HistoricalCharge charge;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text(
+        charge.validFrom?.toLocal().toString() ?? '',
+      ),
+      subtitle: Text(
+        '${charge.valueIncVat.toString()}p/kWh',
+      ),
     );
   }
 }
