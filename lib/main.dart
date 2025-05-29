@@ -20,11 +20,16 @@ void main() {
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({
+    super.key,
+  });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return MaterialApp(
+      home: const MyHomePage(),
       title: 'Price Tracker for Agile Octopus',
       theme: ThemeData(
         colorScheme: const ColorScheme(
@@ -39,53 +44,82 @@ class MyApp extends StatelessWidget {
           onSurface: Color(0xffffffff),
         ),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  final String title;
+  const MyHomePage({
+    super.key,
+  });
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<MyHomePage> createState() {
+    return _MyHomePageState();
+  }
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+  late final Future<PaginatedHistoricalChargeList> _future;
 
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-    });
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Scaffold(
+      body: SafeArea(
+        child: FutureBuilder(
+          future: _future,
+          builder: (context, snapshot) {
+            if (snapshot.data case final data?) {
+              data.results.sort(
+                (a, b) {
+                  if (a.validFrom case final a?) {
+                    if (b.validFrom case final b?) {
+                      return a.compareTo(b);
+                    }
+                  }
+
+                  return 0;
+                },
+              );
+
+              return ListView.builder(
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(
+                      data.results[index].validFrom?.toLocal().toString() ?? '',
+                    ),
+                    subtitle: Text(
+                      '${data.results[index].valueIncVat.toString()}p/kWh',
+                    ),
+                  );
+                },
+                itemCount: data.results.length,
+              );
+            }
+
+            return Center(
+              child: CircularProgressIndicator(),
+            );
+          },
+        ),
+      ),
+    );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text(widget.title),
-      ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+  void initState() {
+    super.initState();
+
+    final client = context.read<OctopusEnergyApiClient>();
+
+    _future = client.products.listElectricityTariffStandardUnitRates(
+      'AGILE-24-10-01',
+      'E-1R-AGILE-24-10-01-E',
+      page: 1,
+      pageSize: 96,
+      periodFrom: DateTime.now().toUtc(),
     );
   }
 }
