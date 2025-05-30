@@ -1,10 +1,13 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+part 'main.g.dart';
 
 void main() {
   runApp(
@@ -52,6 +55,21 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+@TypedGoRoute<HomeRoute>(
+  path: '/',
+)
+class HomeRoute extends GoRouteData {
+  const HomeRoute();
+
+  @override
+  Widget build(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return const HomeScreen();
   }
 }
 
