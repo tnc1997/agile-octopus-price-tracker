@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   runApp(
@@ -12,6 +13,11 @@ void main() {
         Provider(
           create: (context) {
             return OctopusEnergyApiClient();
+          },
+        ),
+        Provider(
+          create: (context) {
+            return SharedPreferencesAsync();
           },
         ),
       ],
