@@ -36,7 +36,7 @@ class MyApp extends StatelessWidget {
     BuildContext context,
   ) {
     return MaterialApp(
-      home: const MyHomePage(),
+      home: const HomeScreen(),
       title: 'Price Tracker for Agile Octopus',
       theme: ThemeData(
         colorScheme: const ColorScheme(
@@ -55,18 +55,18 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({
     super.key,
   });
 
   @override
-  State<MyHomePage> createState() {
-    return _MyHomePageState();
+  State<HomeScreen> createState() {
+    return _HomeScreenState();
   }
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeScreenState extends State<HomeScreen> {
   late final Future<PaginatedHistoricalChargeList> _future;
 
   @override
