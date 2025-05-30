@@ -35,6 +35,7 @@ dependencies:
   http: ^1.0.0
   intl: ^0.20.0
   provider: ^6.0.0
+  shared_preferences: ^2.0.0
 
 dev_dependencies:
   flutter_lints: ^5.0.0
