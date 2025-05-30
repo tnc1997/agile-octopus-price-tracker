@@ -38,8 +38,12 @@ class MyApp extends StatelessWidget {
   Widget build(
     BuildContext context,
   ) {
-    return MaterialApp(
-      home: const HomeScreen(),
+    return MaterialApp.router(
+      routerConfig: GoRouter(
+        routes: [
+          $homeRoute,
+        ],
+      ),
       title: 'Price Tracker for Agile Octopus',
       theme: ThemeData(
         colorScheme: const ColorScheme(
