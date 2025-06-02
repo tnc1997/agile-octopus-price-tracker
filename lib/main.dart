@@ -396,6 +396,55 @@ class ProductsService {
   }
 }
 
+class PaginatedGridSupplyPointList {
+  final int count;
+  final List<GridSupplyPoint> results;
+  final Uri? next;
+  final Uri? previous;
+
+  const PaginatedGridSupplyPointList({
+    required this.count,
+    required this.results,
+    this.next,
+    this.previous,
+  });
+
+  factory PaginatedGridSupplyPointList.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final next = json['next'];
+    final previous = json['previous'];
+
+    return PaginatedGridSupplyPointList(
+      count: json['count'],
+      results: List<GridSupplyPoint>.from(
+        json['results'].map(
+          (result) {
+            return GridSupplyPoint.fromJson(result);
+          },
+        ),
+      ),
+      next: next != null ? Uri.parse(next) : null,
+      previous: previous != null ? Uri.parse(previous) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'count': count,
+      'results': List<dynamic>.from(
+        results.map(
+          (result) {
+            return result.toJson();
+          },
+        ),
+      ),
+      'next': next,
+      'previous': previous,
+    };
+  }
+}
+
 class GridSupplyPoint {
   final String groupId;
 
