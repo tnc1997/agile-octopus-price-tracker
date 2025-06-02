@@ -396,6 +396,28 @@ class ProductsService {
   }
 }
 
+class GridSupplyPoint {
+  final String groupId;
+
+  const GridSupplyPoint({
+    required this.groupId,
+  });
+
+  factory GridSupplyPoint.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return GridSupplyPoint(
+      groupId: json['group_id'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'group_id': groupId,
+    };
+  }
+}
+
 class PaginatedHistoricalChargeList {
   final int count;
   final List<HistoricalCharge> results;
