@@ -330,11 +330,18 @@ class _WelcomeFormState extends State<WelcomeForm> {
 class OctopusEnergyApiClient {
   final http.Client _client;
 
+  IndustryService? _industry;
   ProductsService? _products;
 
   OctopusEnergyApiClient({
     http.Client? client,
   }) : _client = client ?? http.Client();
+
+  IndustryService get industry {
+    return _industry ??= IndustryService(
+      client: _client,
+    );
+  }
 
   ProductsService get products {
     return _products ??= ProductsService(
@@ -355,6 +362,38 @@ class OctopusEnergyApiClientException implements Exception {
     } else {
       return response;
     }
+  }
+}
+
+class IndustryService {
+  final http.Client _client;
+
+  const IndustryService({
+    required http.Client client,
+  }) : _client = client;
+
+  Future<PaginatedGridSupplyPointList> listIndustryGridSupplyPoints({
+    int? page,
+    String? postcode,
+  }) async {
+    final response = await _client.get(
+      Uri.https(
+        'api.octopus.energy',
+        '/v1/industry/grid-supply-points',
+        {
+          if (page != null) 'page': page.toString(),
+          if (postcode != null) 'postcode': postcode,
+        },
+      ),
+    );
+
+    OctopusEnergyApiClientException.checkIsSuccessStatusCode(response);
+
+    return PaginatedGridSupplyPointList.fromJson(
+      json.decode(
+        response.body,
+      ),
+    );
   }
 }
 
