@@ -148,6 +148,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+@TypedGoRoute<WelcomeRoute>(
+  path: '/welcome',
+)
+class WelcomeRoute extends GoRouteData {
+  @override
+  Widget build(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return const WelcomeScreen();
+  }
+}
+
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({
     super.key,
