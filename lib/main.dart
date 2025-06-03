@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -156,31 +155,6 @@ class ContinueButton extends StatelessWidget {
         }
       },
       child: const Text('Continue'),
-    );
-  }
-}
-
-class HistoricalChargeListTile extends StatelessWidget {
-  const HistoricalChargeListTile({
-    super.key,
-    required this.charge,
-  });
-
-  final HistoricalCharge charge;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(
-        DateFormat('Hm').format(
-          charge.validFrom!.toLocal(),
-        ),
-      ),
-      subtitle: Text(
-        NumberFormat('0.00p/kWh').format(
-          charge.valueIncVat,
-        ),
-      ),
     );
   }
 }

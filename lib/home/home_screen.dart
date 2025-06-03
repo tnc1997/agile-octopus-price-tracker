@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../main.dart';
+import 'historical_charge_list_tile.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -42,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
               return ListView.builder(
                 itemBuilder: (context, index) {
                   return HistoricalChargeListTile(
-                    charge: data.results[index],
+                    historicalCharge: data.results[index],
                   );
                 },
                 itemCount: data.results.length,
