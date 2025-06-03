@@ -7,9 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home/home_route.dart';
-import 'welcome/welcome_screen.dart';
-
-part 'main.g.dart';
+import 'welcome/welcome_route.dart';
 
 void main() {
   runApp(
@@ -75,19 +73,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-@TypedGoRoute<WelcomeRoute>(
-  path: '/welcome',
-)
-class WelcomeRoute extends GoRouteData {
-  @override
-  Widget build(
-    BuildContext context,
-    GoRouterState state,
-  ) {
-    return const WelcomeScreen();
   }
 }
 
