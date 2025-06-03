@@ -7,9 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home/home_route.dart';
-import 'welcome/continue_button.dart';
-import 'welcome/import_product_code_form_field.dart';
-import 'welcome/postcode_form_field.dart';
+import 'welcome/welcome_form.dart';
 
 part 'main.g.dart';
 
@@ -109,69 +107,6 @@ class WelcomeScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class WelcomeForm extends StatefulWidget {
-  const WelcomeForm({
-    super.key,
-  });
-
-  @override
-  State<WelcomeForm> createState() {
-    return _WelcomeFormState();
-  }
-}
-
-class _WelcomeFormState extends State<WelcomeForm> {
-  final _formKey = GlobalKey<FormState>();
-  final _importProductCodeNotifier = ValueNotifier<String?>(null);
-  final _postcodeController = TextEditingController();
-
-  @override
-  Widget build(
-    BuildContext context,
-  ) {
-    return Form(
-      key: _formKey,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: PostcodeFormField(
-                controller: _postcodeController,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ImportProductCodeFormField(
-                notifier: _importProductCodeNotifier,
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ContinueButton(
-                formKey: _formKey,
-                postcodeController: _postcodeController,
-                importProductCodeNotifier: _importProductCodeNotifier,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  void dispose() {
-    _importProductCodeNotifier.dispose();
-    _postcodeController.dispose();
-
-    super.dispose();
   }
 }
 
