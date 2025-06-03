@@ -7,7 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'home/home_route.dart';
-import 'welcome/welcome_form.dart';
+import 'welcome/welcome_screen.dart';
 
 part 'main.g.dart';
 
@@ -88,25 +88,6 @@ class WelcomeRoute extends GoRouteData {
     GoRouterState state,
   ) {
     return const WelcomeScreen();
-  }
-}
-
-class WelcomeScreen extends StatelessWidget {
-  const WelcomeScreen({
-    super.key,
-  });
-
-  @override
-  Widget build(
-    BuildContext context,
-  ) {
-    return const Scaffold(
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: WelcomeForm(),
-        ),
-      ),
-    );
   }
 }
 
