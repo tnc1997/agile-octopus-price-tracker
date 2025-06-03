@@ -7,7 +7,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'home/home_screen.dart';
+import 'home/home_route.dart';
 
 part 'main.g.dart';
 
@@ -75,21 +75,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-@TypedGoRoute<HomeRoute>(
-  path: '/',
-)
-class HomeRoute extends GoRouteData {
-  const HomeRoute();
-
-  @override
-  Widget build(
-    BuildContext context,
-    GoRouterState state,
-  ) {
-    return const HomeScreen();
   }
 }
 

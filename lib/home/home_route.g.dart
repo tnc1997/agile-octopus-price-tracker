@@ -1,25 +1,25 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'main.dart';
+part of 'home_route.dart';
 
 // **************************************************************************
 // GoRouterGenerator
 // **************************************************************************
 
 List<RouteBase> get $appRoutes => [
-      $welcomeRoute,
+      $homeRoute,
     ];
 
-RouteBase get $welcomeRoute => GoRouteData.$route(
-      path: '/welcome',
-      factory: $WelcomeRouteExtension._fromState,
+RouteBase get $homeRoute => GoRouteData.$route(
+      path: '/',
+      factory: $HomeRouteExtension._fromState,
     );
 
-extension $WelcomeRouteExtension on WelcomeRoute {
-  static WelcomeRoute _fromState(GoRouterState state) => WelcomeRoute();
+extension $HomeRouteExtension on HomeRoute {
+  static HomeRoute _fromState(GoRouterState state) => const HomeRoute();
 
   String get location => GoRouteData.$location(
-        '/welcome',
+        '/',
       );
 
   void go(BuildContext context) => context.go(location);
