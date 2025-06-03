@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'home/home_route.dart';
 import 'welcome/continue_button.dart';
 import 'welcome/import_product_code_form_field.dart';
+import 'welcome/postcode_form_field.dart';
 
 part 'main.g.dart';
 
@@ -107,35 +108,6 @@ class WelcomeScreen extends StatelessWidget {
           child: WelcomeForm(),
         ),
       ),
-    );
-  }
-}
-
-class PostcodeFormField extends StatelessWidget {
-  const PostcodeFormField({
-    super.key,
-    required this.controller,
-  });
-
-  final TextEditingController controller;
-
-  @override
-  Widget build(
-    BuildContext context,
-  ) {
-    return TextFormField(
-      controller: controller,
-      decoration: const InputDecoration(
-        label: Text('Postcode'),
-        border: OutlineInputBorder(),
-      ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please enter your postcode.';
-        }
-
-        return null;
-      },
     );
   }
 }
