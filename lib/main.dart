@@ -42,7 +42,21 @@ class MyApp extends StatelessWidget {
       routerConfig: GoRouter(
         routes: [
           $homeRoute,
+          $welcomeRoute,
         ],
+        redirect: (context, state) async {
+          final preferences = context.read<SharedPreferencesAsync>();
+
+          if (!await preferences.containsKey('import_product_code')) {
+            return WelcomeRoute().location;
+          }
+
+          if (!await preferences.containsKey('region_code')) {
+            return WelcomeRoute().location;
+          }
+
+          return null;
+        },
       ),
       title: 'Price Tracker for Agile Octopus',
       theme: ThemeData(
