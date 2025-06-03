@@ -148,6 +148,25 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
+class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({
+    super.key,
+  });
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return const Scaffold(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: WelcomeForm(),
+        ),
+      ),
+    );
+  }
+}
+
 class ContinueButton extends StatelessWidget {
   const ContinueButton({
     super.key,
