@@ -341,6 +341,36 @@ class HistoricalCharge {
       'value_inc_vat': valueIncVat,
       'valid_from': validFrom?.toIso8601String(),
       'valid_to': validTo?.toIso8601String(),
+class Link {
+  final Uri? href;
+  final String? method;
+  final String? rel;
+
+  const Link({
+    this.href,
+    this.method,
+    this.rel,
+  });
+
+  factory Link.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return Link(
+      href: json['href'] != null ? Uri.parse(json['href']) : null,
+      method: json['method'],
+      rel: json['rel'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'href': href?.toString(),
+      'method': method,
+      'rel': rel,
+    };
+  }
+}
+
     };
   }
 }
