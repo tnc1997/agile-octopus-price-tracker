@@ -184,6 +184,100 @@ class ProductsService {
   }
 }
 
+class Eco7ElectricityTariff {
+  final String? code;
+  final double? standingChargeExcVat;
+  final double? standingChargeIncVat;
+  final double? onlineDiscountExcVat;
+  final double? onlineDiscountIncVat;
+  final double? dualFuelDiscountExcVat;
+  final double? dualFuelDiscountIncVat;
+  final double? exitFeesExcVat;
+  final double? exitFeesIncVat;
+  final String? exitFeesType;
+  final List<Link>? links;
+  final double? dayUnitRateExcVat;
+  final double? dayUnitRateIncVat;
+  final double? nightUnitRateExcVat;
+  final double? nightUnitRateIncVat;
+
+  const Eco7ElectricityTariff({
+    this.code,
+    this.standingChargeExcVat,
+    this.standingChargeIncVat,
+    this.onlineDiscountExcVat,
+    this.onlineDiscountIncVat,
+    this.dualFuelDiscountExcVat,
+    this.dualFuelDiscountIncVat,
+    this.exitFeesExcVat,
+    this.exitFeesIncVat,
+    this.exitFeesType,
+    this.links,
+    this.dayUnitRateExcVat,
+    this.dayUnitRateIncVat,
+    this.nightUnitRateExcVat,
+    this.nightUnitRateIncVat,
+  });
+
+  factory Eco7ElectricityTariff.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return Eco7ElectricityTariff(
+      code: json['code'],
+      standingChargeExcVat: json['standing_charge_exc_vat']?.toDouble(),
+      standingChargeIncVat: json['standing_charge_inc_vat']?.toDouble(),
+      onlineDiscountExcVat: json['online_discount_exc_vat']?.toDouble(),
+      onlineDiscountIncVat: json['online_discount_inc_vat']?.toDouble(),
+      dualFuelDiscountExcVat: json['dual_fuel_discount_exc_vat']?.toDouble(),
+      dualFuelDiscountIncVat: json['dual_fuel_discount_inc_vat']?.toDouble(),
+      exitFeesExcVat: json['exit_fees_exc_vat']?.toDouble(),
+      exitFeesIncVat: json['exit_fees_inc_vat']?.toDouble(),
+      exitFeesType: json['exit_fees_type'],
+      links: json['links'] != null
+          ? List<Link>.from(
+              (json['links'] as List<dynamic>).map(
+                (link) {
+                  return Link.fromJson(link);
+                },
+              ),
+            )
+          : null,
+      dayUnitRateExcVat: json['day_unit_rate_exc_vat']?.toDouble(),
+      dayUnitRateIncVat: json['day_unit_rate_inc_vat']?.toDouble(),
+      nightUnitRateExcVat: json['night_unit_rate_exc_vat']?.toDouble(),
+      nightUnitRateIncVat: json['night_unit_rate_inc_vat']?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'standing_charge_exc_vat': standingChargeExcVat,
+      'standing_charge_inc_vat': standingChargeIncVat,
+      'online_discount_exc_vat': onlineDiscountExcVat,
+      'online_discount_inc_vat': onlineDiscountIncVat,
+      'dual_fuel_discount_exc_vat': dualFuelDiscountExcVat,
+      'dual_fuel_discount_inc_vat': dualFuelDiscountIncVat,
+      'exit_fees_exc_vat': exitFeesExcVat,
+      'exit_fees_inc_vat': exitFeesIncVat,
+      'exit_fees_type': exitFeesType,
+      'links': links != null
+          ? List<dynamic>.from(
+              links!.map(
+                (link) {
+                  return link.toJson();
+                },
+              ),
+            )
+          : null,
+      'day_unit_rate_exc_vat': dayUnitRateExcVat,
+      'day_unit_rate_inc_vat': dayUnitRateIncVat,
+      'night_unit_rate_exc_vat': nightUnitRateExcVat,
+      'night_unit_rate_inc_vat': nightUnitRateIncVat,
+    };
+  }
+}
+
 class GridSupplyPointGroupIds {
   static const eastEngland = '_A';
   static const eastMidlands = '_B';
