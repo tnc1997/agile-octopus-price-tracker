@@ -1,0 +1,89 @@
+name: Release
+on:
+  push:
+    tags:
+      - 'v*'
+jobs:
+  build_android_app_bundle:
+    name: Build Android App Bundle
+    needs:
+      - create_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Decrypt archive
+        env:
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase "$PASSPHRASE" --output "./archive.tar" "./archive.tar.gpg"
+          tar -xf "./archive.tar"
+          rm "./archive.tar"
+      - name: Setup Flutter
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          channel: beta
+      - name: Build Android App Bundle
+        run: flutter build appbundle
+      - name: Upload release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/octet-stream
+          asset_name: agile-octopus-price-tracker-android.aab
+          asset_path: ./build/app/outputs/bundle/release/app-release.aab
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+  build_android_application_package:
+    name: Build Android Application Package
+    needs:
+      - create_release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Decrypt archive
+        env:
+          PASSPHRASE: ${{ secrets.PASSPHRASE }}
+        run: |
+          gpg --quiet --batch --yes --decrypt --passphrase "$PASSPHRASE" --output "./archive.tar" "./archive.tar.gpg"
+          tar -xf "./archive.tar"
+          rm "./archive.tar"
+      - name: Setup Flutter
+        uses: flutter-actions/setup-flutter@v4
+        with:
+          channel: beta
+      - name: Build Android Application Package
+        run: flutter build apk --split-per-abi
+      - name: Upload release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/vnd.android.package-archive
+          asset_name: agile-octopus-price-tracker-android-arm64.apk
+          asset_path: ./build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+      - name: Upload release asset
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: actions/upload-release-asset@v1
+        with:
+          asset_content_type: application/vnd.android.package-archive
+          asset_name: agile-octopus-price-tracker-android-x64.apk
+          asset_path: ./build/app/outputs/flutter-apk/app-x86_64-release.apk
+          upload_url: ${{ needs.create_release.outputs.upload_url }}
+  create_release:
+    name: Create release
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        id: create_release
+        uses: actions/create-release@v1
+        with:
+          release_name: ${{ github.ref }}
+          tag_name: ${{ github.ref }}
