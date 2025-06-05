@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'historical_charge_list_tile.dart';
@@ -64,13 +65,21 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
 
     final client = context.read<OctopusEnergyApiClient>();
+    final preferences = context.read<SharedPreferencesAsync>();
 
-    _future = client.products.listElectricityTariffStandardUnitRates(
-      'AGILE-24-10-01',
-      'E-1R-AGILE-24-10-01-E',
-      page: 1,
-      pageSize: 96,
-      periodFrom: DateTime.now().toUtc(),
+    _future = (
+      preferences.getString('import_product_code'),
+      preferences.getString('import_tariff_code'),
+    ).wait.then(
+      (value) {
+        return client.products.listElectricityTariffStandardUnitRates(
+          value.$1!,
+          value.$2!,
+          page: 1,
+          pageSize: 96,
+          periodFrom: DateTime.now().toUtc(),
+        );
+      },
     );
   }
 }
