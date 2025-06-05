@@ -580,6 +580,286 @@ class PaymentMethods {
   const PaymentMethods._();
 }
 
+class Product {
+  final String? code;
+  final String? fullName;
+  final String? displayName;
+  final String? description;
+  final bool? isVariable;
+  final bool? isGreen;
+  final bool? isTracker;
+  final bool? isPrepay;
+  final bool? isBusiness;
+  final bool? isRestricted;
+  final int? term;
+  final DateTime? availableFrom;
+  final DateTime? availableTo;
+  final DateTime? tariffsActiveAt;
+  final Map<String, Map<String, StandardElectricityTariff>>?
+      singleRegisterElectricityTariffs;
+  final Map<String, Map<String, Eco7ElectricityTariff>>?
+      dualRegisterElectricityTariffs;
+  final Map<String, Map<String, GasTariff>>? singleRegisterGasTariffs;
+  final Map<String, Map<String, SampleQuotes>>? sampleQuotes;
+  final SampleConsumption? sampleConsumption;
+  final List<Link>? links;
+  final String? brand;
+
+  const Product({
+    this.code,
+    this.fullName,
+    this.displayName,
+    this.description,
+    this.isVariable,
+    this.isGreen,
+    this.isTracker,
+    this.isPrepay,
+    this.isBusiness,
+    this.isRestricted,
+    this.term,
+    this.availableFrom,
+    this.availableTo,
+    this.tariffsActiveAt,
+    this.singleRegisterElectricityTariffs,
+    this.dualRegisterElectricityTariffs,
+    this.singleRegisterGasTariffs,
+    this.sampleQuotes,
+    this.sampleConsumption,
+    this.links,
+    this.brand,
+  });
+
+  factory Product.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return Product(
+      code: json['code'],
+      fullName: json['full_name'],
+      displayName: json['display_name'],
+      description: json['description'],
+      isVariable: json['is_variable'],
+      isGreen: json['is_green'],
+      isTracker: json['is_tracker'],
+      isPrepay: json['is_prepay'],
+      isBusiness: json['is_business'],
+      isRestricted: json['is_restricted'],
+      term: json['term'],
+      availableFrom: json['available_from'] != null
+          ? DateTime.parse(json['available_from'])
+          : null,
+      availableTo: json['available_to'] != null
+          ? DateTime.parse(json['available_to'])
+          : null,
+      tariffsActiveAt: json['tariffs_active_at'] != null
+          ? DateTime.parse(json['tariffs_active_at'])
+          : null,
+      singleRegisterElectricityTariffs:
+          json['single_register_electricity_tariffs'] != null
+              ? Map<String, Map<String, StandardElectricityTariff>>.from(
+                  (json['single_register_electricity_tariffs']
+                          as Map<String, dynamic>)
+                      .map(
+                    (key, value) {
+                      return MapEntry<String,
+                          Map<String, StandardElectricityTariff>>(
+                        key,
+                        (value as Map<String, dynamic>).map(
+                          (key, value) {
+                            return MapEntry<String, StandardElectricityTariff>(
+                              key,
+                              StandardElectricityTariff.fromJson(value),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : null,
+      dualRegisterElectricityTariffs: json[
+                  'dual_register_electricity_tariffs'] !=
+              null
+          ? Map<String, Map<String, Eco7ElectricityTariff>>.from(
+              (json['dual_register_electricity_tariffs']
+                      as Map<String, dynamic>)
+                  .map(
+                (key, value) {
+                  return MapEntry<String, Map<String, Eco7ElectricityTariff>>(
+                    key,
+                    (value as Map<String, dynamic>).map(
+                      (key, value) {
+                        return MapEntry<String, Eco7ElectricityTariff>(
+                          key,
+                          Eco7ElectricityTariff.fromJson(value),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            )
+          : null,
+      singleRegisterGasTariffs: json['single_register_gas_tariffs'] != null
+          ? Map<String, Map<String, GasTariff>>.from(
+              (json['single_register_gas_tariffs'] as Map<String, dynamic>).map(
+                (key, value) {
+                  return MapEntry<String, Map<String, GasTariff>>(
+                    key,
+                    (value as Map<String, dynamic>).map(
+                      (key, value) {
+                        return MapEntry<String, GasTariff>(
+                          key,
+                          GasTariff.fromJson(value),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            )
+          : null,
+      sampleQuotes: json['sample_quotes'] != null
+          ? Map<String, Map<String, SampleQuotes>>.from(
+              (json['sample_quotes'] as Map<String, dynamic>).map(
+                (key, value) {
+                  return MapEntry<String, Map<String, SampleQuotes>>(
+                    key,
+                    (value as Map<String, dynamic>).map(
+                      (key, value) {
+                        return MapEntry<String, SampleQuotes>(
+                          key,
+                          SampleQuotes.fromJson(value),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            )
+          : null,
+      sampleConsumption: SampleConsumption.fromJson(json['sample_consumption']),
+      links: json['links'] != null
+          ? List<Link>.from(
+              (json['links'] as List<dynamic>).map(
+                (link) {
+                  return Link.fromJson(link);
+                },
+              ),
+            )
+          : null,
+      brand: json['brand'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'full_name': fullName,
+      'display_name': displayName,
+      'description': description,
+      'is_variable': isVariable,
+      'is_green': isGreen,
+      'is_tracker': isTracker,
+      'is_prepay': isPrepay,
+      'is_business': isBusiness,
+      'is_restricted': isRestricted,
+      'term': term,
+      'available_from': availableFrom?.toIso8601String(),
+      'available_to': availableTo?.toIso8601String(),
+      'tariffs_active_at': tariffsActiveAt?.toIso8601String(),
+      'single_register_electricity_tariffs':
+          singleRegisterElectricityTariffs != null
+              ? Map<String, dynamic>.from(
+                  singleRegisterElectricityTariffs!.map(
+                    (key, value) {
+                      return MapEntry<String, dynamic>(
+                        key,
+                        value.map(
+                          (key, value) {
+                            return MapEntry<String, dynamic>(
+                              key,
+                              value.toJson(),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : null,
+      'dual_register_electricity_tariffs':
+          dualRegisterElectricityTariffs != null
+              ? Map<String, dynamic>.from(
+                  dualRegisterElectricityTariffs!.map(
+                    (key, value) {
+                      return MapEntry<String, dynamic>(
+                        key,
+                        value.map(
+                          (key, value) {
+                            return MapEntry<String, dynamic>(
+                              key,
+                              value.toJson(),
+                            );
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                )
+              : null,
+      'single_register_gas_tariffs': singleRegisterGasTariffs != null
+          ? Map<String, dynamic>.from(
+              singleRegisterGasTariffs!.map(
+                (key, value) {
+                  return MapEntry<String, dynamic>(
+                    key,
+                    value.map(
+                      (key, value) {
+                        return MapEntry<String, dynamic>(
+                          key,
+                          value.toJson(),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            )
+          : null,
+      'sample_quotes': sampleQuotes != null
+          ? Map<String, dynamic>.from(
+              sampleQuotes!.map(
+                (key, value) {
+                  return MapEntry<String, dynamic>(
+                    key,
+                    value.map(
+                      (key, value) {
+                        return MapEntry<String, dynamic>(
+                          key,
+                          value.toJson(),
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            )
+          : null,
+      'sample_consumption': sampleConsumption?.toJson(),
+      'links': links != null
+          ? List<dynamic>.from(
+              links!.map(
+                (link) {
+                  return link.toJson();
+                },
+              ),
+            )
+          : null,
+      'brand': brand,
+    };
+  }
+}
+
 class SampleConsumption {
   final Map<String, int>? electricitySingleRate;
   final Map<String, int>? electricityDualRate;
