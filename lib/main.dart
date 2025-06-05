@@ -400,6 +400,80 @@ class PaymentMethods {
   const PaymentMethods._();
 }
 
+class SampleQuotes {
+  final Map<String, int>? electricitySingleRate;
+  final Map<String, int>? electricityDualRate;
+  final Map<String, int>? dualFuelSingleRate;
+  final Map<String, int>? dualFuelDualRate;
+
+  const SampleQuotes({
+    this.electricitySingleRate,
+    this.electricityDualRate,
+    this.dualFuelSingleRate,
+    this.dualFuelDualRate,
+  });
+
+  factory SampleQuotes.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return SampleQuotes(
+      electricitySingleRate: json['electricity_single_rate'] != null
+          ? Map<String, int>.from(
+              json['electricity_single_rate'].map(
+                (key, value) {
+                  return MapEntry<String, int>(
+                    key,
+                    value.toInt(),
+                  );
+                },
+              ),
+            )
+          : null,
+      electricityDualRate: json['electricity_dual_rate'] != null
+          ? Map<String, int>.from(
+              json['electricity_dual_rate'].map(
+                (key, value) {
+                  return MapEntry<String, int>(
+                    key,
+                    value.toInt(),
+                  );
+                },
+              ),
+            )
+          : null,
+      dualFuelSingleRate: json['dual_fuel_single_rate'] != null
+          ? Map<String, int>.from(
+              json['dual_fuel_single_rate'].map(
+                (key, value) {
+                  return MapEntry<String, int>(
+                    key,
+                    value.toInt(),
+                  );
+                },
+              ),
+            )
+          : null,
+      dualFuelDualRate: json['dual_fuel_dual_rate'] != null
+          ? Map<String, int>.from(
+              json['dual_fuel_dual_rate'].map(
+                (key, value) {
+                  return MapEntry<String, int>(
+                    key,
+                    value.toInt(),
+                  );
+                },
+              ),
+            )
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'electricity_single_rate': electricitySingleRate,
+      'electricity_dual_rate': electricityDualRate,
+      'dual_fuel_single_rate': dualFuelSingleRate,
+      'dual_fuel_dual_rate': dualFuelDualRate,
     };
   }
 }
