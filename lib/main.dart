@@ -278,6 +278,92 @@ class Eco7ElectricityTariff {
   }
 }
 
+class GasTariff {
+  final String? code;
+  final double? standingChargeExcVat;
+  final double? standingChargeIncVat;
+  final double? onlineDiscountExcVat;
+  final double? onlineDiscountIncVat;
+  final double? dualFuelDiscountExcVat;
+  final double? dualFuelDiscountIncVat;
+  final double? exitFeesExcVat;
+  final double? exitFeesIncVat;
+  final String? exitFeesType;
+  final List<Link>? links;
+  final double? standardUnitRateExcVat;
+  final double? standardUnitRateIncVat;
+
+  const GasTariff({
+    this.code,
+    this.standingChargeExcVat,
+    this.standingChargeIncVat,
+    this.onlineDiscountExcVat,
+    this.onlineDiscountIncVat,
+    this.dualFuelDiscountExcVat,
+    this.dualFuelDiscountIncVat,
+    this.exitFeesExcVat,
+    this.exitFeesIncVat,
+    this.exitFeesType,
+    this.links,
+    this.standardUnitRateExcVat,
+    this.standardUnitRateIncVat,
+  });
+
+  factory GasTariff.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return GasTariff(
+      code: json['code'],
+      standingChargeExcVat: json['standing_charge_exc_vat']?.toDouble(),
+      standingChargeIncVat: json['standing_charge_inc_vat']?.toDouble(),
+      onlineDiscountExcVat: json['online_discount_exc_vat']?.toDouble(),
+      onlineDiscountIncVat: json['online_discount_inc_vat']?.toDouble(),
+      dualFuelDiscountExcVat: json['dual_fuel_discount_exc_vat']?.toDouble(),
+      dualFuelDiscountIncVat: json['dual_fuel_discount_inc_vat']?.toDouble(),
+      exitFeesExcVat: json['exit_fees_exc_vat']?.toDouble(),
+      exitFeesIncVat: json['exit_fees_inc_vat']?.toDouble(),
+      exitFeesType: json['exit_fees_type'],
+      links: json['links'] != null
+          ? List<Link>.from(
+              (json['links'] as List<dynamic>).map(
+                (link) {
+                  return Link.fromJson(link);
+                },
+              ),
+            )
+          : null,
+      standardUnitRateExcVat: json['standard_unit_rate_exc_vat']?.toDouble(),
+      standardUnitRateIncVat: json['standard_unit_rate_inc_vat']?.toDouble(),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'code': code,
+      'standing_charge_exc_vat': standingChargeExcVat,
+      'standing_charge_inc_vat': standingChargeIncVat,
+      'online_discount_exc_vat': onlineDiscountExcVat,
+      'online_discount_inc_vat': onlineDiscountIncVat,
+      'dual_fuel_discount_exc_vat': dualFuelDiscountExcVat,
+      'dual_fuel_discount_inc_vat': dualFuelDiscountIncVat,
+      'exit_fees_exc_vat': exitFeesExcVat,
+      'exit_fees_inc_vat': exitFeesIncVat,
+      'exit_fees_type': exitFeesType,
+      'links': links != null
+          ? List<dynamic>.from(
+              links!.map(
+                (link) {
+                  return link.toJson();
+                },
+              ),
+            )
+          : null,
+      'standard_unit_rate_exc_vat': standardUnitRateExcVat,
+      'standard_unit_rate_inc_vat': standardUnitRateIncVat,
+    };
+  }
+}
+
 class GridSupplyPointGroupIds {
   static const eastEngland = '_A';
   static const eastMidlands = '_B';
