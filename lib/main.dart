@@ -47,11 +47,11 @@ class MyApp extends StatelessWidget {
         redirect: (context, state) async {
           final preferences = context.read<SharedPreferencesAsync>();
 
-          if (!await preferences.containsKey('import_product_code')) {
+          if (!await preferences.containsKey('grid_supply_point_group_id')) {
             return WelcomeRoute().location;
           }
 
-          if (!await preferences.containsKey('region_code')) {
+          if (!await preferences.containsKey('import_product_code')) {
             return WelcomeRoute().location;
           }
 

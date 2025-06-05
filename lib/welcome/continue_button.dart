@@ -30,18 +30,18 @@ class ContinueButton extends StatelessWidget {
             final preferences = context.read<SharedPreferencesAsync>();
             final router = GoRouter.of(context);
 
+            await preferences.setString(
+              'import_product_code',
+              importProductCodeNotifier.value!,
+            );
+
             final list = await client.industry.listIndustryGridSupplyPoints(
               page: 1,
               postcode: postcodeController.value.text,
             );
 
             await preferences.setString(
-              'import_product_code',
-              importProductCodeNotifier.value!,
-            );
-
-            await preferences.setString(
-              'region_code',
+              'grid_supply_point_group_id',
               list.results.single.groupId,
             );
 
