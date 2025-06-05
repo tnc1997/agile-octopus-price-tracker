@@ -182,6 +182,30 @@ class ProductsService {
       ),
     );
   }
+
+  Future<Product> retrieveAProduct(
+    String productCode, {
+    DateTime? tariffsActiveAt,
+  }) async {
+    final response = await _client.get(
+      Uri.https(
+        'api.octopus.energy',
+        '/v1/products/$productCode',
+        {
+          if (tariffsActiveAt != null)
+            'tariffs_active_at': tariffsActiveAt.toIso8601String(),
+        },
+      ),
+    );
+
+    OctopusEnergyApiClientException.checkIsSuccessStatusCode(response);
+
+    return Product.fromJson(
+      json.decode(
+        response.body,
+      ),
+    );
+  }
 }
 
 class Eco7ElectricityTariff {
