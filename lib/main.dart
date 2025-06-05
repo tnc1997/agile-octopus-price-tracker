@@ -390,6 +390,16 @@ class Link {
   }
 }
 
+class PaymentMethods {
+  static const directDebitMonthly = 'direct_debit_monthly';
+  static const directDebitQuarterly = 'direct_debit_quarterly';
+  static const paymentOnReceiptOfBill = 'porob';
+  static const prepayment = 'prepayment';
+  static const varying = 'varying';
+
+  const PaymentMethods._();
+}
+
     };
   }
 }
