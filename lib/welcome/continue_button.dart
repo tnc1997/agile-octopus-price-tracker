@@ -42,7 +42,7 @@ class ContinueButton extends StatelessWidget {
 
             await preferences.setString(
               'grid_supply_point_group_id',
-              list.results.single.groupId,
+              list.results!.single.groupId!,
             );
 
             router.go(
