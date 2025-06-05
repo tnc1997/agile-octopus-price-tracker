@@ -27,8 +27,8 @@ class _HomeScreenState extends State<HomeScreen> {
         child: FutureBuilder(
           future: _future,
           builder: (context, snapshot) {
-            if (snapshot.data case final data?) {
-              data.results.sort(
+            if (snapshot.data?.results case final results?) {
+              results.sort(
                 (a, b) {
                   if (a.validFrom case final a?) {
                     if (b.validFrom case final b?) {
@@ -43,10 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
               return ListView.builder(
                 itemBuilder: (context, index) {
                   return HistoricalChargeListTile(
-                    historicalCharge: data.results[index],
+                    historicalCharge: results[index],
                   );
                 },
-                itemCount: data.results.length,
+                itemCount: results.length,
               );
             }
 

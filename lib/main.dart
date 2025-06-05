@@ -408,14 +408,14 @@ class GridSupplyPointGroupIds {
 }
 
 class PaginatedGridSupplyPointList {
-  final int count;
-  final List<GridSupplyPoint> results;
+  final int? count;
+  final List<GridSupplyPoint>? results;
   final Uri? next;
   final Uri? previous;
 
   const PaginatedGridSupplyPointList({
-    required this.count,
-    required this.results,
+    this.count,
+    this.results,
     this.next,
     this.previous,
   });
@@ -423,44 +423,45 @@ class PaginatedGridSupplyPointList {
   factory PaginatedGridSupplyPointList.fromJson(
     Map<String, dynamic> json,
   ) {
-    final next = json['next'];
-    final previous = json['previous'];
-
     return PaginatedGridSupplyPointList(
       count: json['count'],
-      results: List<GridSupplyPoint>.from(
-        json['results'].map(
-          (result) {
-            return GridSupplyPoint.fromJson(result);
-          },
-        ),
-      ),
-      next: next != null ? Uri.parse(next) : null,
-      previous: previous != null ? Uri.parse(previous) : null,
+      results: json['results'] != null
+          ? List<GridSupplyPoint>.from(
+              (json['results'] as List<dynamic>).map(
+                (result) {
+                  return GridSupplyPoint.fromJson(result);
+                },
+              ),
+            )
+          : null,
+      next: json['next'] != null ? Uri.parse(json['next']) : null,
+      previous: json['previous'] != null ? Uri.parse(json['previous']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'count': count,
-      'results': List<dynamic>.from(
-        results.map(
-          (result) {
-            return result.toJson();
-          },
-        ),
-      ),
-      'next': next,
-      'previous': previous,
+      'results': results != null
+          ? List<dynamic>.from(
+              results!.map(
+                (result) {
+                  return result.toJson();
+                },
+              ),
+            )
+          : null,
+      'next': next?.toString(),
+      'previous': previous?.toString(),
     };
   }
 }
 
 class GridSupplyPoint {
-  final String groupId;
+  final String? groupId;
 
   const GridSupplyPoint({
-    required this.groupId,
+    this.groupId,
   });
 
   factory GridSupplyPoint.fromJson(
@@ -479,14 +480,14 @@ class GridSupplyPoint {
 }
 
 class PaginatedHistoricalChargeList {
-  final int count;
-  final List<HistoricalCharge> results;
+  final int? count;
+  final List<HistoricalCharge>? results;
   final Uri? next;
   final Uri? previous;
 
   const PaginatedHistoricalChargeList({
-    required this.count,
-    required this.results,
+    this.count,
+    this.results,
     this.next,
     this.previous,
   });
@@ -494,35 +495,36 @@ class PaginatedHistoricalChargeList {
   factory PaginatedHistoricalChargeList.fromJson(
     Map<String, dynamic> json,
   ) {
-    final next = json['next'];
-    final previous = json['previous'];
-
     return PaginatedHistoricalChargeList(
-      count: json['count'],
-      results: List<HistoricalCharge>.from(
-        json['results'].map(
-          (result) {
-            return HistoricalCharge.fromJson(result);
-          },
-        ),
-      ),
-      next: next != null ? Uri.parse(next) : null,
-      previous: previous != null ? Uri.parse(previous) : null,
+      count: json['count']?.toInt(),
+      results: json['results'] != null
+          ? List<HistoricalCharge>.from(
+              (json['results'] as List<dynamic>).map(
+                (result) {
+                  return HistoricalCharge.fromJson(result);
+                },
+              ),
+            )
+          : null,
+      next: json['next'] != null ? Uri.parse(json['next']) : null,
+      previous: json['previous'] != null ? Uri.parse(json['previous']) : null,
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'count': count,
-      'results': List<dynamic>.from(
-        results.map(
-          (result) {
-            return result.toJson();
-          },
-        ),
-      ),
-      'next': next,
-      'previous': previous,
+      'results': results != null
+          ? List<dynamic>.from(
+              results!.map(
+                (result) {
+                  return result.toJson();
+                },
+              ),
+            )
+          : null,
+      'next': next?.toString(),
+      'previous': previous?.toString(),
     };
   }
 }
@@ -531,39 +533,43 @@ class HistoricalCharge {
   final String? paymentMethod;
   final DateTime? validFrom;
   final DateTime? validTo;
-  final double valueExcVat;
-  final double valueIncVat;
+  final double? valueExcVat;
+  final double? valueIncVat;
 
   const HistoricalCharge({
     this.paymentMethod,
     this.validFrom,
     this.validTo,
-    required this.valueExcVat,
-    required this.valueIncVat,
+    this.valueExcVat,
+    this.valueIncVat,
   });
 
   factory HistoricalCharge.fromJson(
     Map<String, dynamic> json,
   ) {
-    final validFrom = json['valid_from'];
-    final validTo = json['valid_to'];
-
     return HistoricalCharge(
       paymentMethod: json['payment_method'],
-      valueExcVat: json['value_exc_vat'].toDouble(),
-      valueIncVat: json['value_inc_vat'].toDouble(),
-      validFrom: validFrom != null ? DateTime.parse(validFrom) : null,
-      validTo: validTo != null ? DateTime.parse(validTo) : null,
+      validFrom: json['valid_from'] != null
+          ? DateTime.parse(json['valid_from'])
+          : null,
+      validTo:
+          json['valid_to'] != null ? DateTime.parse(json['valid_to']) : null,
+      valueExcVat: json['value_exc_vat']?.toDouble(),
+      valueIncVat: json['value_inc_vat']?.toDouble(),
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
       'payment_method': paymentMethod,
-      'value_exc_vat': valueExcVat,
-      'value_inc_vat': valueIncVat,
       'valid_from': validFrom?.toIso8601String(),
       'valid_to': validTo?.toIso8601String(),
+      'value_exc_vat': valueExcVat,
+      'value_inc_vat': valueIncVat,
+    };
+  }
+}
+
 class Link {
   final Uri? href;
   final String? method;
