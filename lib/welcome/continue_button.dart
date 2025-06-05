@@ -40,9 +40,23 @@ class ContinueButton extends StatelessWidget {
               postcode: postcodeController.value.text,
             );
 
+            final groupId = list.results!.single.groupId!;
+
             await preferences.setString(
               'grid_supply_point_group_id',
-              list.results!.single.groupId!,
+              groupId,
+            );
+
+            final product = await client.products.retrieveAProduct(
+              importProductCodeNotifier.value!,
+              tariffsActiveAt: DateTime.now().toUtc(),
+            );
+
+            final tariffs = product.singleRegisterElectricityTariffs!;
+
+            await preferences.setString(
+              'import_tariff_code',
+              tariffs[groupId]![PaymentMethods.directDebitMonthly]!.code!,
             );
 
             router.go(
