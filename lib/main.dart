@@ -184,6 +184,25 @@ class ProductsService {
   }
 }
 
+class GridSupplyPointGroupIds {
+  static const eastEngland = '_A';
+  static const eastMidlands = '_B';
+  static const london = '_C';
+  static const northWalesMerseysideAndCheshire = '_D';
+  static const westMidlands = '_E';
+  static const northEastEngland = '_F';
+  static const northWestEngland = '_G';
+  static const northScotland = '_P';
+  static const southAndCentralScotland = '_N';
+  static const southEastEngland = '_J';
+  static const southernEngland = '_H';
+  static const southWales = '_K';
+  static const southWestEngland = '_L';
+  static const yorkshire = '_M';
+
+  const GridSupplyPointGroupIds._();
+}
+
 class PaginatedGridSupplyPointList {
   final int count;
   final List<GridSupplyPoint> results;
