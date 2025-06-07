@@ -27,37 +27,119 @@ class ContinueButton extends StatelessWidget {
         if (formKey.currentState case final state?) {
           if (state.validate()) {
             final client = context.read<OctopusEnergyApiClient>();
+            final messenger = ScaffoldMessenger.of(context);
             final preferences = context.read<SharedPreferencesAsync>();
             final router = GoRouter.of(context);
 
-            await preferences.setString(
-              'import_product_code',
-              importProductCodeNotifier.value!,
-            );
+            try {
+              await preferences.setString(
+                'import_product_code',
+                importProductCodeNotifier.value!,
+              );
+            } catch (e) {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to set the import product code.'),
+                ),
+              );
 
-            final list = await client.industry.listIndustryGridSupplyPoints(
-              page: 1,
-              postcode: postcodeController.value.text,
-            );
+              return;
+            }
 
-            final groupId = list.results!.single.groupId!;
+            final PaginatedGridSupplyPointList list;
 
-            await preferences.setString(
-              'grid_supply_point_group_id',
-              groupId,
-            );
+            try {
+              list = await client.industry.listIndustryGridSupplyPoints(
+                page: 1,
+                postcode: postcodeController.value.text,
+              );
+            } catch (e) {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to list the grid supply points.'),
+                ),
+              );
 
-            final product = await client.products.retrieveAProduct(
-              importProductCodeNotifier.value!,
-              tariffsActiveAt: DateTime.now().toUtc(),
-            );
+              return;
+            }
 
-            final tariffs = product.singleRegisterElectricityTariffs!;
+            final String groupId;
 
-            await preferences.setString(
-              'import_tariff_code',
-              tariffs[groupId]![PaymentMethods.directDebitMonthly]!.code!,
-            );
+            try {
+              groupId = list.results!.single.groupId!;
+            } catch (e) {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to get the group identifier.'),
+                ),
+              );
+
+              return;
+            }
+
+            try {
+              await preferences.setString(
+                'grid_supply_point_group_id',
+                groupId,
+              );
+            } catch (e) {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to set the group identifier.'),
+                ),
+              );
+
+              return;
+            }
+
+            final Product product;
+
+            try {
+              product = await client.products.retrieveAProduct(
+                importProductCodeNotifier.value!,
+                tariffsActiveAt: DateTime.now().toUtc(),
+              );
+            } catch (e) {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to retrieve the product.'),
+                ),
+              );
+
+              return;
+            }
+
+            final String importTariffCode;
+
+            try {
+              importTariffCode = product
+                  .singleRegisterElectricityTariffs![groupId]![
+                      PaymentMethods.directDebitMonthly]!
+                  .code!;
+            } catch (e) {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to get the import tariff code.'),
+                ),
+              );
+
+              return;
+            }
+
+            try {
+              await preferences.setString(
+                'import_tariff_code',
+                importTariffCode,
+              );
+            } catch (e) {
+              messenger.showSnackBar(
+                const SnackBar(
+                  content: Text('Failed to set the import tariff code.'),
+                ),
+              );
+
+              return;
+            }
 
             router.go(
               const HomeRoute().location,
