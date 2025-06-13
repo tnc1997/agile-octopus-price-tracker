@@ -2,6 +2,27 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.2.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.1.0...v0.2.0) (2025-06-13)
+
+### Features
+
+* **home:** add layout builder with chart and list view ([e91a69c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/e91a69c6a62483bb2db1bd09e4118547b211f3d6))
+* **welcome:** add error handling to continue button ([9707f14](https://github.com/tnc1997/agile-octopus-price-tracker/commit/9707f14ddc3d37e14d94d7e4c91b79b1795d4d05))
+
+### Miscellaneous Chores
+
+* add privacy policy ([c7d177b](https://github.com/tnc1997/agile-octopus-price-tracker/commit/c7d177bcc2a8cccab1e72cc3d23aebfd3be66db5))
+* add terms of service ([e6bc53d](https://github.com/tnc1997/agile-octopus-price-tracker/commit/e6bc53de9b9cb3a248d1e958b1d8239f95cfc3b3))
+
+### Build System
+
+* add syncfusion_flutter_charts package ([452dc99](https://github.com/tnc1997/agile-octopus-price-tracker/commit/452dc992ed5e0598f880c6d90e401769452e8f32))
+
+### Code Refactoring
+
+* **home:** add historical charge chart widget ([1c428d8](https://github.com/tnc1997/agile-octopus-price-tracker/commit/1c428d8174a78a205c2456655662c811f54af7f4))
+* **home:** extract historical charge list view widget ([2a464bb](https://github.com/tnc1997/agile-octopus-price-tracker/commit/2a464bbab0f8272dda90435bb46db37d6293effc))
+
 ## 0.1.0 (2025-06-06)
 
 ### Features
