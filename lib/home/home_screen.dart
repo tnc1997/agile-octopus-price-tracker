@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
+import 'historical_charge_chart.dart';
 import 'historical_charge_list_view.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -41,8 +44,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               );
 
-              return HistoricalChargeListView(
-                historicalCharges: historicalCharges,
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  if (constraints.maxWidth > 768) {
+                    return HistoricalChargeChart(
+                      historicalCharges: historicalCharges,
+                    );
+                  } else {
+                    return HistoricalChargeListView(
+                      historicalCharges: historicalCharges,
+                    );
+                  }
+                },
               );
             }
 
