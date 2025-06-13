@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -19,7 +17,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final _controller = StreamController<PaginatedHistoricalChargeList>();
+  late final Future<PaginatedHistoricalChargeList> _future;
 
   @override
   Widget build(
@@ -27,8 +25,8 @@ class _HomeScreenState extends State<HomeScreen> {
   ) {
     return Scaffold(
       body: SafeArea(
-        child: StreamBuilder(
-          stream: _controller.stream,
+        child: FutureBuilder(
+          future: _future,
           builder: (context, snapshot) {
             if (snapshot.data?.results case final historicalCharges?) {
               historicalCharges.sort(
@@ -43,13 +41,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 },
               );
 
-              return RefreshIndicator(
-                child: HistoricalChargeListView(
-                  historicalCharges: historicalCharges,
-                ),
-                onRefresh: () async {
-                  await _get().then(_controller.add);
-                },
+              return HistoricalChargeListView(
+                historicalCharges: historicalCharges,
               );
             }
 
@@ -66,22 +59,22 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    _get().then(_controller.add);
-  }
-
-  Future<PaginatedHistoricalChargeList> _get() async {
     final client = context.read<OctopusEnergyApiClient>();
     final preferences = context.read<SharedPreferencesAsync>();
 
-    final productCode = await preferences.getString('import_product_code');
-    final tariffCode = await preferences.getString('import_tariff_code');
-
-    return client.products.listElectricityTariffStandardUnitRates(
-      productCode!,
-      tariffCode!,
-      page: 1,
-      pageSize: 96,
-      periodFrom: DateTime.now().toUtc(),
+    _future = (
+      preferences.getString('import_product_code'),
+      preferences.getString('import_tariff_code'),
+    ).wait.then(
+      (value) {
+        return client.products.listElectricityTariffStandardUnitRates(
+          value.$1!,
+          value.$2!,
+          page: 1,
+          pageSize: 96,
+          periodFrom: DateTime.now().toUtc(),
+        );
+      },
     );
   }
 }
