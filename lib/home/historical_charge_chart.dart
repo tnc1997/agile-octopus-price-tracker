@@ -40,6 +40,9 @@ class HistoricalChargeChart extends StatelessWidget {
           yValueMapper: (datum, index) {
             return datum.valueIncVat!;
           },
+          sortFieldValueMapper: (datum, index) {
+            return datum.validFrom!.toLocal();
+          },
         ),
       ],
     );
