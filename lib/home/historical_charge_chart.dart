@@ -27,7 +27,7 @@ class HistoricalChargeChart extends StatelessWidget {
         ),
         numberFormat: NumberFormat('0.00'),
       ),
-      tooltipBehavior: TooltipBehavior(
+      trackballBehavior: TrackballBehavior(
         enable: true,
         header: '',
       ),
