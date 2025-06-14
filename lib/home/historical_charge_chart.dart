@@ -29,7 +29,6 @@ class HistoricalChargeChart extends StatelessWidget {
       ),
       trackballBehavior: TrackballBehavior(
         enable: true,
-        header: '',
       ),
       series: [
         StepLineSeries<HistoricalCharge, DateTime>(
