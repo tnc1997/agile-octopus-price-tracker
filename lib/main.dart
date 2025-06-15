@@ -399,18 +399,18 @@ class GasTariff {
 }
 
 class GridSupplyPointGroupIds {
-  static const eastEngland = '_A';
   static const eastMidlands = '_B';
+  static const easternEngland = '_A';
   static const london = '_C';
-  static const northEastEngland = '_F';
-  static const northScotland = '_P';
-  static const northWalesMerseysideAndCheshire = '_D';
-  static const northWestEngland = '_G';
-  static const southAndCentralScotland = '_N';
-  static const southEastEngland = '_J';
-  static const southWales = '_K';
-  static const southWestEngland = '_L';
+  static const merseysideAndNorthernWales = '_D';
+  static const northEasternEngland = '_F';
+  static const northWesternEngland = '_G';
+  static const northernScotland = '_P';
+  static const southEasternEngland = '_J';
+  static const southWesternEngland = '_L';
   static const southernEngland = '_H';
+  static const southernScotland = '_N';
+  static const southernWales = '_K';
   static const westMidlands = '_E';
   static const yorkshire = '_M';
 
