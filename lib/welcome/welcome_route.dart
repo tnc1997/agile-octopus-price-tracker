@@ -9,6 +9,8 @@ part 'welcome_route.g.dart';
   path: '/welcome',
 )
 class WelcomeRoute extends GoRouteData {
+  const WelcomeRoute();
+
   @override
   Widget build(
     BuildContext context,

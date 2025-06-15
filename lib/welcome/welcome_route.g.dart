@@ -16,7 +16,7 @@ RouteBase get $welcomeRoute => GoRouteData.$route(
     );
 
 extension $WelcomeRouteExtension on WelcomeRoute {
-  static WelcomeRoute _fromState(GoRouterState state) => WelcomeRoute();
+  static WelcomeRoute _fromState(GoRouterState state) => const WelcomeRoute();
 
   String get location => GoRouteData.$location(
         '/welcome',
