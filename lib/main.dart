@@ -417,6 +417,25 @@ class GridSupplyPointGroupIds {
   const GridSupplyPointGroupIds._();
 }
 
+class GridSupplyPointGroupNames {
+  static const eastMidlands = 'East Midlands';
+  static const easternEngland = 'Eastern England';
+  static const london = 'London';
+  static const merseysideAndNorthernWales = 'Merseyside and Northern Wales';
+  static const northEasternEngland = 'North Eastern England';
+  static const northWesternEngland = 'North Western England';
+  static const northernScotland = 'Northern Scotland';
+  static const southEasternEngland = 'South Eastern England';
+  static const southWesternEngland = 'South Western England';
+  static const southernEngland = 'Southern England';
+  static const southernScotland = 'Southern Scotland';
+  static const southernWales = 'Southern Wales';
+  static const westMidlands = 'West Midlands';
+  static const yorkshire = 'Yorkshire';
+
+  const GridSupplyPointGroupNames._();
+}
+
 class PaginatedGridSupplyPointList {
   final int? count;
   final List<GridSupplyPoint>? results;
