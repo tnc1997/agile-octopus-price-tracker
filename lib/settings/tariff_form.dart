@@ -3,12 +3,77 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../common/shell_route.dart';
 import '../home/home_route.dart';
 import '../main.dart';
+import 'import_product_code_form_field.dart';
+import 'postcode_form_field.dart';
 
-class ContinueButton extends StatelessWidget {
-  const ContinueButton({
+class TariffForm extends StatefulWidget {
+  const TariffForm({
     super.key,
+  });
+
+  @override
+  State<TariffForm> createState() {
+    return _TariffFormState();
+  }
+}
+
+class _TariffFormState extends State<TariffForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _importProductCodeNotifier = ValueNotifier<String?>(null);
+  final _postcodeController = TextEditingController();
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return Form(
+      key: _formKey,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: PostcodeFormField(
+                controller: _postcodeController,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ImportProductCodeFormField(
+                notifier: _importProductCodeNotifier,
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: _SaveButton(
+                formKey: _formKey,
+                postcodeController: _postcodeController,
+                importProductCodeNotifier: _importProductCodeNotifier,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _importProductCodeNotifier.dispose();
+    _postcodeController.dispose();
+
+    super.dispose();
+  }
+}
+
+class _SaveButton extends StatelessWidget {
+  const _SaveButton({
     required this.formKey,
     required this.importProductCodeNotifier,
     required this.postcodeController,
@@ -21,15 +86,18 @@ class ContinueButton extends StatelessWidget {
   final TextEditingController postcodeController;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return FilledButton(
       onPressed: () async {
-        if (formKey.currentState case final state?) {
-          if (state.validate()) {
+        if (formKey.currentState case final formState?) {
+          if (formState.validate()) {
             final client = context.read<OctopusEnergyApiClient>();
             final messenger = ScaffoldMessenger.of(context);
             final preferences = context.read<SharedPreferencesAsync>();
             final router = GoRouter.of(context);
+            final routerState = GoRouterState.of(context);
 
             try {
               await preferences.setString(
@@ -141,13 +209,15 @@ class ContinueButton extends StatelessWidget {
               return;
             }
 
-            router.go(
-              const HomeRoute().location,
-            );
+            if (routerState.uri.path == '/welcome') {
+              router.go(
+                const HomeRoute().location,
+              );
+            }
           }
         }
       },
-      child: const Text('Continue'),
+      child: const Text('Save'),
     );
   }
 }

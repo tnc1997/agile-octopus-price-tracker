@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'welcome_form.dart';
+import '../settings/tariff_form.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({
@@ -14,7 +14,7 @@ class WelcomeScreen extends StatelessWidget {
     return const Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          child: WelcomeForm(),
+          child: TariffForm(),
         ),
       ),
     );
