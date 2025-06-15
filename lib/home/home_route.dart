@@ -3,11 +3,6 @@ import 'package:go_router/go_router.dart';
 
 import 'home_screen.dart';
 
-part 'home_route.g.dart';
-
-@TypedGoRoute<HomeRoute>(
-  path: '/',
-)
 class HomeRoute extends GoRouteData {
   const HomeRoute();
 
