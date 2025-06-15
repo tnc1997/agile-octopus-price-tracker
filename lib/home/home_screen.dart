@@ -26,45 +26,41 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(
     BuildContext context,
   ) {
-    return Scaffold(
-      body: SafeArea(
-        child: FutureBuilder(
-          future: _future,
-          builder: (context, snapshot) {
-            if (snapshot.data?.results case final historicalCharges?) {
-              historicalCharges.sort(
-                (a, b) {
-                  if (a.validFrom case final a?) {
-                    if (b.validFrom case final b?) {
-                      return a.compareTo(b);
-                    }
-                  }
+    return FutureBuilder(
+      future: _future,
+      builder: (context, snapshot) {
+        if (snapshot.data?.results case final historicalCharges?) {
+          historicalCharges.sort(
+            (a, b) {
+              if (a.validFrom case final a?) {
+                if (b.validFrom case final b?) {
+                  return a.compareTo(b);
+                }
+              }
 
-                  return 0;
-                },
-              );
+              return 0;
+            },
+          );
 
-              return LayoutBuilder(
-                builder: (context, constraints) {
-                  if (constraints.maxWidth > 768) {
-                    return HistoricalChargeChart(
-                      historicalCharges: historicalCharges,
-                    );
-                  } else {
-                    return HistoricalChargeListView(
-                      historicalCharges: historicalCharges,
-                    );
-                  }
-                },
-              );
-            }
+          return LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth > 768) {
+                return HistoricalChargeChart(
+                  historicalCharges: historicalCharges,
+                );
+              } else {
+                return HistoricalChargeListView(
+                  historicalCharges: historicalCharges,
+                );
+              }
+            },
+          );
+        }
 
-            return Center(
-              child: CircularProgressIndicator(),
-            );
-          },
-        ),
-      ),
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
 
