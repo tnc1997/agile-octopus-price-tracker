@@ -6,8 +6,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../common/shell_route.dart';
 import '../home/home_route.dart';
 import '../main.dart';
+import 'grid_supply_point_group_id_form_field.dart';
 import 'import_product_code_form_field.dart';
-import 'postcode_form_field.dart';
 
 class TariffForm extends StatefulWidget {
   const TariffForm({
@@ -22,8 +22,8 @@ class TariffForm extends StatefulWidget {
 
 class _TariffFormState extends State<TariffForm> {
   final _formKey = GlobalKey<FormState>();
+  final _gridSupplyPointGroupIdNotifier = ValueNotifier<String?>(null);
   final _importProductCodeNotifier = ValueNotifier<String?>(null);
-  final _postcodeController = TextEditingController();
 
   @override
   Widget build(
@@ -39,8 +39,8 @@ class _TariffFormState extends State<TariffForm> {
           children: [
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: PostcodeFormField(
-                controller: _postcodeController,
+              child: GridSupplyPointGroupIdFormField(
+                notifier: _gridSupplyPointGroupIdNotifier,
               ),
             ),
             Padding(
@@ -53,7 +53,7 @@ class _TariffFormState extends State<TariffForm> {
               padding: const EdgeInsets.all(8.0),
               child: _SaveButton(
                 formKey: _formKey,
-                postcodeController: _postcodeController,
+                gridSupplyPointGroupIdNotifier: _gridSupplyPointGroupIdNotifier,
                 importProductCodeNotifier: _importProductCodeNotifier,
               ),
             ),
@@ -65,8 +65,8 @@ class _TariffFormState extends State<TariffForm> {
 
   @override
   void dispose() {
+    _gridSupplyPointGroupIdNotifier.dispose();
     _importProductCodeNotifier.dispose();
-    _postcodeController.dispose();
 
     super.dispose();
   }
@@ -75,15 +75,15 @@ class _TariffFormState extends State<TariffForm> {
 class _SaveButton extends StatelessWidget {
   const _SaveButton({
     required this.formKey,
+    required this.gridSupplyPointGroupIdNotifier,
     required this.importProductCodeNotifier,
-    required this.postcodeController,
   });
 
   final GlobalKey<FormState> formKey;
 
-  final ValueNotifier<String?> importProductCodeNotifier;
+  final ValueNotifier<String?> gridSupplyPointGroupIdNotifier;
 
-  final TextEditingController postcodeController;
+  final ValueNotifier<String?> importProductCodeNotifier;
 
   @override
   Widget build(
@@ -114,41 +114,10 @@ class _SaveButton extends StatelessWidget {
               return;
             }
 
-            final PaginatedGridSupplyPointList list;
-
-            try {
-              list = await client.industry.listIndustryGridSupplyPoints(
-                page: 1,
-                postcode: postcodeController.value.text,
-              );
-            } catch (e) {
-              messenger.showSnackBar(
-                const SnackBar(
-                  content: Text('Failed to list the grid supply points.'),
-                ),
-              );
-
-              return;
-            }
-
-            final String groupId;
-
-            try {
-              groupId = list.results!.single.groupId!;
-            } catch (e) {
-              messenger.showSnackBar(
-                const SnackBar(
-                  content: Text('Failed to get the group identifier.'),
-                ),
-              );
-
-              return;
-            }
-
             try {
               await preferences.setString(
                 'grid_supply_point_group_id',
-                groupId,
+                gridSupplyPointGroupIdNotifier.value!,
               );
             } catch (e) {
               messenger.showSnackBar(
@@ -181,8 +150,9 @@ class _SaveButton extends StatelessWidget {
 
             try {
               importTariffCode = product
-                  .singleRegisterElectricityTariffs![groupId]![
-                      PaymentMethods.directDebitMonthly]!
+                  .singleRegisterElectricityTariffs![
+                      gridSupplyPointGroupIdNotifier
+                          .value!]![PaymentMethods.directDebitMonthly]!
                   .code!;
             } catch (e) {
               messenger.showSnackBar(
