@@ -32,30 +32,22 @@ class _TariffFormState extends State<TariffForm> {
     return Form(
       key: _formKey,
       child: Padding(
-        padding: const EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 16.0,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: GridSupplyPointGroupIdFormField(
-                notifier: _gridSupplyPointGroupIdNotifier,
-              ),
+            GridSupplyPointGroupIdFormField(
+              notifier: _gridSupplyPointGroupIdNotifier,
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ImportProductCodeFormField(
-                notifier: _importProductCodeNotifier,
-              ),
+            ImportProductCodeFormField(
+              notifier: _importProductCodeNotifier,
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: _SaveButton(
-                formKey: _formKey,
-                gridSupplyPointGroupIdNotifier: _gridSupplyPointGroupIdNotifier,
-                importProductCodeNotifier: _importProductCodeNotifier,
-              ),
+            _SaveButton(
+              formKey: _formKey,
+              gridSupplyPointGroupIdNotifier: _gridSupplyPointGroupIdNotifier,
+              importProductCodeNotifier: _importProductCodeNotifier,
             ),
           ],
         ),
