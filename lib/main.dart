@@ -1489,3 +1489,53 @@ class Place {
     };
   }
 }
+
+/// Adds 'user-agent' header when making HTTP requests.
+class UserAgentClient extends http.BaseClient {
+  final String _userAgent;
+  final http.Client _inner;
+
+  UserAgentClient({
+    required String userAgent,
+    http.Client? inner,
+  })  : _userAgent = userAgent,
+        _inner = inner ?? http.Client();
+
+  @override
+  void close() {
+    _inner.close();
+  }
+
+  @override
+  Future<http.StreamedResponse> send(
+    http.BaseRequest request,
+  ) {
+    final clone = http.Request(
+      request.method,
+      request.url,
+    );
+
+    for (final entry in request.headers.entries) {
+      clone.headers[entry.key] = entry.value;
+    }
+
+    clone.headers['user-agent'] = _userAgent;
+
+    return _inner.send(clone);
+  }
+}
+
+/// Obtains a [Client] which uses the given [userAgent] for making HTTP requests.
+///
+/// If [inner] is provided, all HTTP requests will be made with it. Otherwise, a new [Client] instance will be created.
+///
+/// The user is responsible for closing the returned HTTP [Client]. Closing the returned [Client] will also close the [inner] client.
+http.Client clientViaUserAgent(
+  String userAgent, {
+  http.Client? inner,
+}) {
+  return UserAgentClient(
+    userAgent: userAgent,
+    inner: inner,
+  );
+}
