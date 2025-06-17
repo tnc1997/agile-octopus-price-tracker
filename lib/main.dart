@@ -1161,6 +1161,21 @@ class StandardElectricityTariff {
   }
 }
 
+class NominatimApiClientException implements Exception {
+  /// Checks that the [response] has a success status code.
+  ///
+  /// Throws an [NominatimApiClientException] if the [response] does not have a success status code.
+  static http.Response checkIsSuccessStatusCode(
+    http.Response response,
+  ) {
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      throw NominatimApiClientException();
+    } else {
+      return response;
+    }
+  }
+}
+
 extension BoolExtension on bool {
   int toInt() {
     return this ? 1 : 0;
