@@ -28,68 +28,69 @@ class _GridSupplyPointGroupIdFormFieldState
     return FutureBuilder(
       future: _future,
       builder: (context, snapshot) {
-        final groupIds = snapshot.data?.map(
+        final items = snapshot.data?.map(
           (point) {
-            return point.groupId;
+            return DropdownMenuItem<String>(
+              value: point.groupId,
+              child: Text(
+                switch (point.groupId) {
+                  GridSupplyPointGroupIds.eastMidlands =>
+                    GridSupplyPointGroupNames.eastMidlands,
+                  GridSupplyPointGroupIds.easternEngland =>
+                    GridSupplyPointGroupNames.easternEngland,
+                  GridSupplyPointGroupIds.london =>
+                    GridSupplyPointGroupNames.london,
+                  GridSupplyPointGroupIds.merseysideAndNorthernWales =>
+                    GridSupplyPointGroupNames.merseysideAndNorthernWales,
+                  GridSupplyPointGroupIds.northEasternEngland =>
+                    GridSupplyPointGroupNames.northEasternEngland,
+                  GridSupplyPointGroupIds.northWesternEngland =>
+                    GridSupplyPointGroupNames.northWesternEngland,
+                  GridSupplyPointGroupIds.northernScotland =>
+                    GridSupplyPointGroupNames.northernScotland,
+                  GridSupplyPointGroupIds.southEasternEngland =>
+                    GridSupplyPointGroupNames.southEasternEngland,
+                  GridSupplyPointGroupIds.southWesternEngland =>
+                    GridSupplyPointGroupNames.southWesternEngland,
+                  GridSupplyPointGroupIds.southernEngland =>
+                    GridSupplyPointGroupNames.southernEngland,
+                  GridSupplyPointGroupIds.southernScotland =>
+                    GridSupplyPointGroupNames.southernScotland,
+                  GridSupplyPointGroupIds.southernWales =>
+                    GridSupplyPointGroupNames.southernWales,
+                  GridSupplyPointGroupIds.westMidlands =>
+                    GridSupplyPointGroupNames.westMidlands,
+                  GridSupplyPointGroupIds.yorkshire =>
+                    GridSupplyPointGroupNames.yorkshire,
+                  _ => 'Unknown',
+                },
+              ),
+            );
           },
-        ).nonNulls;
+        ).toList();
 
-        if (groupIds != null) {
-          return DropdownButtonFormField<String>(
-            items: groupIds.map(
-              (groupId) {
-                return DropdownMenuItem<String>(
-                  value: groupId,
-                  child: Text(
-                    switch (groupId) {
-                      GridSupplyPointGroupIds.eastMidlands =>
-                        GridSupplyPointGroupNames.eastMidlands,
-                      GridSupplyPointGroupIds.easternEngland =>
-                        GridSupplyPointGroupNames.easternEngland,
-                      GridSupplyPointGroupIds.london =>
-                        GridSupplyPointGroupNames.london,
-                      GridSupplyPointGroupIds.merseysideAndNorthernWales =>
-                        GridSupplyPointGroupNames.merseysideAndNorthernWales,
-                      GridSupplyPointGroupIds.northEasternEngland =>
-                        GridSupplyPointGroupNames.northEasternEngland,
-                      GridSupplyPointGroupIds.northWesternEngland =>
-                        GridSupplyPointGroupNames.northWesternEngland,
-                      GridSupplyPointGroupIds.northernScotland =>
-                        GridSupplyPointGroupNames.northernScotland,
-                      GridSupplyPointGroupIds.southEasternEngland =>
-                        GridSupplyPointGroupNames.southEasternEngland,
-                      GridSupplyPointGroupIds.southWesternEngland =>
-                        GridSupplyPointGroupNames.southWesternEngland,
-                      GridSupplyPointGroupIds.southernEngland =>
-                        GridSupplyPointGroupNames.southernEngland,
-                      GridSupplyPointGroupIds.southernScotland =>
-                        GridSupplyPointGroupNames.southernScotland,
-                      GridSupplyPointGroupIds.southernWales =>
-                        GridSupplyPointGroupNames.southernWales,
-                      GridSupplyPointGroupIds.westMidlands =>
-                        GridSupplyPointGroupNames.westMidlands,
-                      GridSupplyPointGroupIds.yorkshire =>
-                        GridSupplyPointGroupNames.yorkshire,
-                      _ => 'Unknown',
-                    },
-                  ),
-                );
-              },
-            ).toList(),
-            value: widget.notifier.value,
-            onChanged: (value) {
-              widget.notifier.value = value;
-            },
-            decoration: const InputDecoration(
-              label: Text('Region'),
-              border: OutlineInputBorder(),
-            ),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please select your region.';
-              }
+        if (items != null) {
+          return ValueListenableBuilder(
+            valueListenable: widget.notifier,
+            builder: (context, value, child) {
+              return DropdownButtonFormField<String>(
+                items: items,
+                value: value,
+                onChanged: (value) {
+                  widget.notifier.value = value;
+                },
+                decoration: const InputDecoration(
+                  label: Text('Region'),
+                  border: OutlineInputBorder(),
+                ),
+                validator: (value) {
+                  if (value == null || value.isEmpty) {
+                    return 'Please select your region.';
+                  }
 
-              return null;
+                  return null;
+                },
+              );
             },
           );
         }
