@@ -1161,6 +1161,12 @@ class StandardElectricityTariff {
   }
 }
 
+extension BoolExtension on bool {
+  int toInt() {
+    return this ? 1 : 0;
+  }
+}
+
 class Address {
   String? aerialway;
   String? aeroway;
