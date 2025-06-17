@@ -15,6 +15,13 @@ void main() {
       providers: [
         Provider(
           create: (context) {
+            return NominatimApiClient(
+              client: clientViaUserAgent('AgileOctopusPriceTracker/0.2.0'),
+            );
+          },
+        ),
+        Provider(
+          create: (context) {
             return OctopusEnergyApiClient();
           },
         ),
