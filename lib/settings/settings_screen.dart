@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'about_button.dart';
 import 'tariff_form.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -12,15 +13,20 @@ class SettingsScreen extends StatelessWidget {
     BuildContext context,
   ) {
     return const SingleChildScrollView(
-      child: Column(
-        children: [
-          Padding(
-            padding: EdgeInsets.all(8.0),
-            child: Card(
+      child: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          spacing: 16.0,
+          children: [
+            Card(
+              margin: EdgeInsets.zero,
               child: TariffForm(),
             ),
-          ),
-        ],
+            AboutButton(),
+          ],
+        ),
       ),
     );
   }
