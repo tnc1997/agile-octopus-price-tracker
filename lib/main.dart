@@ -1398,3 +1398,94 @@ class Address {
     };
   }
 }
+
+class Place {
+  Address? address;
+  String? addressType;
+  List<double>? boundingBox;
+  String? displayName;
+  Map<String, String>? extraTags;
+  double? importance;
+  double? lat;
+  double? lon;
+  String? name;
+  Map<String, String>? nameDetails;
+  int? osmId;
+  String? osmType;
+  String? placeClass;
+  int? placeId;
+  int? placeRank;
+  String? type;
+
+  Place({
+    this.address,
+    this.addressType,
+    this.boundingBox,
+    this.displayName,
+    this.extraTags,
+    this.importance,
+    this.lat,
+    this.lon,
+    this.name,
+    this.nameDetails,
+    this.osmId,
+    this.osmType,
+    this.placeClass,
+    this.placeId,
+    this.placeRank,
+    this.type,
+  });
+
+  factory Place.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return Place(
+      address:
+          json['address'] != null ? Address.fromJson(json['address']) : null,
+      addressType: json['addresstype'],
+      boundingBox: (json['boundingbox'] as List?)?.map(
+        (coordinate) {
+          return double.parse(coordinate);
+        },
+      ).toList(),
+      displayName: json['display_name'],
+      extraTags: json['extratags'],
+      importance: json['importance'],
+      lat: json['lat'] != null ? double.parse(json['lat']) : null,
+      lon: json['lon'] != null ? double.parse(json['lon']) : null,
+      name: json['name'],
+      nameDetails: json['namedetails'],
+      osmId: json['osm_id'],
+      osmType: json['osm_type'],
+      placeClass: json['class'],
+      placeId: json['place_id'],
+      placeRank: json['place_rank'],
+      type: json['type'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'address': address?.toJson(),
+      'addresstype': addressType,
+      'boundingbox': boundingBox?.map(
+        (coordinate) {
+          return coordinate.toString();
+        },
+      ).toList(),
+      'display_name': displayName,
+      'extratags': extraTags,
+      'importance': importance,
+      'lat': lat?.toString(),
+      'lon': lon?.toString(),
+      'name': name,
+      'namedetails': nameDetails,
+      'osm_id': osmId,
+      'osm_type': osmType,
+      'class': placeClass,
+      'place_id': placeId,
+      'place_rank': placeRank,
+      'type': type,
+    };
+  }
+}
