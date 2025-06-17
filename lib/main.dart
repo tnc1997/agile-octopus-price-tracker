@@ -1161,6 +1161,64 @@ class StandardElectricityTariff {
   }
 }
 
+class NominatimApiClient {
+  final http.Client _client;
+
+  NominatimApiClient({
+    http.Client? client,
+  }) : _client = client ?? http.Client();
+
+  Future<Place> reverse(
+    double lat,
+    double lon, {
+    bool? addressDetails,
+    bool? extraTags,
+    bool? nameDetails,
+    int? zoom,
+    String? layer,
+    bool? polygonGeoJson,
+    bool? polygonKml,
+    bool? polygonSvg,
+    bool? polygonText,
+    double? polygonThreshold,
+  }) async {
+    final response = await _client.get(
+      Uri.https(
+        'nominatim.openstreetmap.org',
+        '/reverse',
+        {
+          'lat': lat.toString(),
+          'lon': lon.toString(),
+          'format': 'json',
+          if (addressDetails != null)
+            'addressdetails': addressDetails.toInt().toString(),
+          if (extraTags != null) 'extratags': extraTags.toInt().toString(),
+          if (nameDetails != null)
+            'namedetails': nameDetails.toInt().toString(),
+          if (zoom != null) 'zoom': zoom.toString(),
+          if (layer != null) 'layer': layer,
+          if (polygonGeoJson != null)
+            'polygon_geojson': polygonGeoJson.toInt().toString(),
+          if (polygonKml != null) 'polygon_kml': polygonKml.toInt().toString(),
+          if (polygonSvg != null) 'polygon_svg': polygonSvg.toInt().toString(),
+          if (polygonText != null)
+            'polygon_text': polygonText.toInt().toString(),
+          if (polygonThreshold != null)
+            'polygon_threshold': polygonThreshold.toString(),
+        },
+      ),
+    );
+
+    NominatimApiClientException.checkIsSuccessStatusCode(response);
+
+    return Place.fromJson(
+      json.decode(
+        response.body,
+      ),
+    );
+  }
+}
+
 class NominatimApiClientException implements Exception {
   /// Checks that the [response] has a success status code.
   ///
