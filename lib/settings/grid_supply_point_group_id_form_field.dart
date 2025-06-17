@@ -72,7 +72,7 @@ class _GridSupplyPointGroupIdFormFieldState
 
         if (items != null) {
           return Row(
-            spacing: 16.0,
+            spacing: 8.0,
             children: [
               Expanded(
                 child: ValueListenableBuilder(
