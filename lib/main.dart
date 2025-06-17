@@ -1160,3 +1160,241 @@ class StandardElectricityTariff {
     };
   }
 }
+
+class Address {
+  String? aerialway;
+  String? aeroway;
+  String? allotments;
+  String? amenity;
+  String? borough;
+  String? boundary;
+  String? bridge;
+  String? city;
+  String? cityBlock;
+  String? cityDistrict;
+  String? club;
+  String? commercial;
+  String? continent;
+  String? country;
+  String? countryCode;
+  String? county;
+  String? craft;
+  String? croft;
+  String? district;
+  String? emergency;
+  String? farm;
+  String? farmyard;
+  String? hamlet;
+  String? historic;
+  String? houseName;
+  String? houseNumber;
+  String? industrial;
+  String? isolatedDwelling;
+  String? landuse;
+  String? leisure;
+  String? manMade;
+  String? military;
+  String? mountainPass;
+  String? municipality;
+  String? natural;
+  String? neighbourhood;
+  String? office;
+  String? place;
+  String? postcode;
+  String? quarter;
+  String? railway;
+  String? region;
+  String? residential;
+  String? retail;
+  String? road;
+  String? shop;
+  String? state;
+  String? stateDistrict;
+  String? subdivision;
+  String? suburb;
+  String? tourism;
+  String? town;
+  String? tunnel;
+  String? village;
+  String? waterway;
+
+  Address({
+    this.aerialway,
+    this.aeroway,
+    this.allotments,
+    this.amenity,
+    this.borough,
+    this.boundary,
+    this.bridge,
+    this.city,
+    this.cityBlock,
+    this.cityDistrict,
+    this.club,
+    this.commercial,
+    this.continent,
+    this.country,
+    this.countryCode,
+    this.county,
+    this.craft,
+    this.croft,
+    this.district,
+    this.emergency,
+    this.farm,
+    this.farmyard,
+    this.hamlet,
+    this.historic,
+    this.houseName,
+    this.houseNumber,
+    this.industrial,
+    this.isolatedDwelling,
+    this.landuse,
+    this.leisure,
+    this.manMade,
+    this.military,
+    this.mountainPass,
+    this.municipality,
+    this.natural,
+    this.neighbourhood,
+    this.office,
+    this.place,
+    this.postcode,
+    this.quarter,
+    this.railway,
+    this.region,
+    this.residential,
+    this.retail,
+    this.road,
+    this.shop,
+    this.state,
+    this.stateDistrict,
+    this.subdivision,
+    this.suburb,
+    this.tourism,
+    this.town,
+    this.tunnel,
+    this.village,
+    this.waterway,
+  });
+
+  factory Address.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return Address(
+      aerialway: json['aerialway'],
+      aeroway: json['aeroway'],
+      allotments: json['allotments'],
+      amenity: json['amenity'],
+      borough: json['borough'],
+      boundary: json['boundary'],
+      bridge: json['bridge'],
+      city: json['city'],
+      cityBlock: json['city_block'],
+      cityDistrict: json['city_district'],
+      club: json['club'],
+      commercial: json['commercial'],
+      continent: json['continent'],
+      country: json['country'],
+      countryCode: json['country_code'],
+      county: json['county'],
+      craft: json['craft'],
+      croft: json['croft'],
+      district: json['district'],
+      emergency: json['emergency'],
+      farm: json['farm'],
+      farmyard: json['farmyard'],
+      hamlet: json['hamlet'],
+      historic: json['historic'],
+      houseName: json['house_name'],
+      houseNumber: json['house_number'],
+      industrial: json['industrial'],
+      isolatedDwelling: json['isolated_dwelling'],
+      landuse: json['landuse'],
+      leisure: json['leisure'],
+      manMade: json['man_made'],
+      military: json['military'],
+      mountainPass: json['mountain_pass'],
+      municipality: json['municipality'],
+      natural: json['natural'],
+      neighbourhood: json['neighbourhood'],
+      office: json['office'],
+      place: json['place'],
+      postcode: json['postcode'],
+      quarter: json['quarter'],
+      railway: json['railway'],
+      region: json['region'],
+      residential: json['residential'],
+      retail: json['retail'],
+      road: json['road'],
+      shop: json['shop'],
+      state: json['state'],
+      stateDistrict: json['state_district'],
+      subdivision: json['subdivision'],
+      suburb: json['suburb'],
+      tourism: json['tourism'],
+      town: json['town'],
+      tunnel: json['tunnel'],
+      village: json['village'],
+      waterway: json['waterway'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'aerialway': aerialway,
+      'aeroway': aeroway,
+      'allotments': allotments,
+      'amenity': amenity,
+      'borough': borough,
+      'boundary': boundary,
+      'bridge': bridge,
+      'city': city,
+      'city_block': cityBlock,
+      'city_district': cityDistrict,
+      'club': club,
+      'commercial': commercial,
+      'continent': continent,
+      'country': country,
+      'country_code': countryCode,
+      'county': county,
+      'craft': craft,
+      'croft': croft,
+      'district': district,
+      'emergency': emergency,
+      'farm': farm,
+      'farmyard': farmyard,
+      'hamlet': hamlet,
+      'historic': historic,
+      'house_name': houseName,
+      'house_number': houseNumber,
+      'industrial': industrial,
+      'isolated_dwelling': isolatedDwelling,
+      'landuse': landuse,
+      'leisure': leisure,
+      'man_made': manMade,
+      'military': military,
+      'mountain_pass': mountainPass,
+      'municipality': municipality,
+      'natural': natural,
+      'neighbourhood': neighbourhood,
+      'office': office,
+      'place': place,
+      'postcode': postcode,
+      'quarter': quarter,
+      'railway': railway,
+      'region': region,
+      'residential': residential,
+      'retail': retail,
+      'road': road,
+      'shop': shop,
+      'state': state,
+      'state_district': stateDistrict,
+      'subdivision': subdivision,
+      'suburb': suburb,
+      'tourism': tourism,
+      'town': town,
+      'tunnel': tunnel,
+      'village': village,
+      'waterway': waterway,
+    };
+  }
+}
