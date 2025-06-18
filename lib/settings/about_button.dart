@@ -14,7 +14,7 @@ class AboutButton extends StatelessWidget {
         showAboutDialog(
           context: context,
           applicationName: 'Price Tracker for Agile Octopus',
-          applicationVersion: '0.2.0',
+          applicationVersion: '0.3.0',
           applicationLegalese: 'Copyright (c) 2025 Thomas Clark',
           children: [
             const SizedBox(

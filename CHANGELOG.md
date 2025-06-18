@@ -2,6 +2,62 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.3.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.2.0...v0.3.0) (2025-06-18)
+
+### Features
+
+* add point color mapper to chart series ([1037732](https://github.com/tnc1997/agile-octopus-price-tracker/commit/103773220f041958c78df801ba899e45c773a703))
+* **settings:** add location icon button ([40f944a](https://github.com/tnc1997/agile-octopus-price-tracker/commit/40f944ab660f63eb09c0c9b2f4bcf110d9605315))
+
+### Bug Fixes
+
+* remove header from chart trackball ([288dd40](https://github.com/tnc1997/agile-octopus-price-tracker/commit/288dd409194834a80dc9867cc6b4f93351922ea5))
+* **settings:** grid supply point group id notifier ([827e608](https://github.com/tnc1997/agile-octopus-price-tracker/commit/827e60878fdcd44573045590fae5f182caa22663))
+* **settings:** import product code notifier ([796d2e8](https://github.com/tnc1997/agile-octopus-price-tracker/commit/796d2e85dbbce8735bf60ff56d0699646e243ca9))
+
+### Styles
+
+* alphabetize grid supply point group ids ([386ac9e](https://github.com/tnc1997/agile-octopus-price-tracker/commit/386ac9e66d924ac0798f7317d5a92a4c47d960e1))
+
+### Code Refactoring
+
+* add address model ([c556ca6](https://github.com/tnc1997/agile-octopus-price-tracker/commit/c556ca6b9a719ba941c9f5be85a3abfe3c1de114))
+* add grid supply point group name constants ([dbc76fe](https://github.com/tnc1997/agile-octopus-price-tracker/commit/dbc76fe729f2e0a993c4e080bdf7038996fb1113))
+* add nominatim api client ([44edf98](https://github.com/tnc1997/agile-octopus-price-tracker/commit/44edf98e3787dee06c720110bcd6444129c6b60c))
+* add nominatim api client exception ([241e58d](https://github.com/tnc1997/agile-octopus-price-tracker/commit/241e58d2f2df21278af751e7806dddb1ec30be3c))
+* add nominatim api client provider ([a6428e5](https://github.com/tnc1997/agile-octopus-price-tracker/commit/a6428e5f5d97d77e948f3f3b21dac93f0289880e))
+* add outline to theme color scheme ([94cf816](https://github.com/tnc1997/agile-octopus-price-tracker/commit/94cf816d9b2c6115dcff972ed66454e0ecce73c9))
+* add place model ([99ff9f1](https://github.com/tnc1997/agile-octopus-price-tracker/commit/99ff9f1e1ebfbf8cadfac37d303f7923e6641c03))
+* add sort field value mapper to chart series ([decc40c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/decc40cac901952e19e88575bd77301f85850267))
+* add surface container to theme color scheme ([5418912](https://github.com/tnc1997/agile-octopus-price-tracker/commit/54189124372b63443b16f49cfe32b845b48e8812))
+* add to int bool extension method ([2532aeb](https://github.com/tnc1997/agile-octopus-price-tracker/commit/2532aebc65081714c3677df0d767987bab03fa8e))
+* add user agent client ([f02aef0](https://github.com/tnc1997/agile-octopus-price-tracker/commit/f02aef0e4f0e38eb1a1608b5d8577a0d24043c81))
+* **common:** add remap num extension ([8c3b7ab](https://github.com/tnc1997/agile-octopus-price-tracker/commit/8c3b7ab47849a2b8cf2f37d6eee79a8dbaf483e2))
+* **common:** add shell route ([6c161b1](https://github.com/tnc1997/agile-octopus-price-tracker/commit/6c161b1e966458e92a6098d98245d09418a1a24b))
+* **common:** add shell screen ([dea38e7](https://github.com/tnc1997/agile-octopus-price-tracker/commit/dea38e7bba4e7e5c33636fd56d45f3ceba12adb1))
+* **home:** remove annotation from home route ([faedb6c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/faedb6cd61e32c44abc90e12b90972262c683b4b))
+* **home:** remove scaffold from home screen ([d54b349](https://github.com/tnc1997/agile-octopus-price-tracker/commit/d54b349046c138da371540c3083a4cbced6d7551))
+* rename grid supply point group ids ([0a10489](https://github.com/tnc1997/agile-octopus-price-tracker/commit/0a1048998c86e15900fb1c363c0e8ebeeaa76a68))
+* replace chart tooltip with trackball ([11234ad](https://github.com/tnc1997/agile-octopus-price-tracker/commit/11234adcb851d676302220ede53bb5e98ff74944))
+* **settings:** add about button widget ([fd48075](https://github.com/tnc1997/agile-octopus-price-tracker/commit/fd48075fd98d0dff6b77427ce240fd6cad58bef3))
+* **settings:** add grid supply point group id form field ([8eff2ee](https://github.com/tnc1997/agile-octopus-price-tracker/commit/8eff2ee5070e3acc89944cb02756e410fff431c9))
+* **settings:** add settings route ([b2247d8](https://github.com/tnc1997/agile-octopus-price-tracker/commit/b2247d83596ae953435dcaad1b3d6d6f12bff692))
+* **settings:** add settings screen ([4f1d8cc](https://github.com/tnc1997/agile-octopus-price-tracker/commit/4f1d8cceb7fdb61e5a2353d402fb3e8d612116f3))
+* **settings:** rename welcome form to tariff form ([430e141](https://github.com/tnc1997/agile-octopus-price-tracker/commit/430e1417e50f8c59f8e104be7be9aaadd1647651))
+* **settings:** replace padding with column spacing ([2431c73](https://github.com/tnc1997/agile-octopus-price-tracker/commit/2431c73efc1f9a8c33b514c450f516f2f294fd1f))
+* **settings:** replace padding with column spacing ([77f9a42](https://github.com/tnc1997/agile-octopus-price-tracker/commit/77f9a42f75aa67267378388bff5a1f074eb17757))
+* **settings:** replace postcode form field ([a6c62cb](https://github.com/tnc1997/agile-octopus-price-tracker/commit/a6c62cb55312bdf0763dff97f258218e0d8b0e0b))
+* **settings:** update grid supply point group id form field spacing ([5f1ca5c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/5f1ca5c86f70691ff55ebf4f732aae0acaca2a6b))
+* **welcome:** add constant constructor to welcome route ([26f5091](https://github.com/tnc1997/agile-octopus-price-tracker/commit/26f50918429d6445321596e754478859efe01158))
+
+### Build System
+
+* add access coarse location android permission ([9810729](https://github.com/tnc1997/agile-octopus-price-tracker/commit/9810729249b6490c130ab0f31634a60b9a34638f))
+* add geolocator package ([5684ea3](https://github.com/tnc1997/agile-octopus-price-tracker/commit/5684ea381e204c953e461dd11d33d19410dbf0f0))
+* add ios application queries schemes ([08dc50c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/08dc50c6b4b44501455ba43c3f3af324e01f717c))
+* add url_launcher package ([3e9b0f2](https://github.com/tnc1997/agile-octopus-price-tracker/commit/3e9b0f20c9b4866c207acc689c38dde2cdba0312))
+* add view android intent ([2f1cc5c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/2f1cc5c5a10586444881ad526e47d0e0b6c49f2f))
+
 ## [0.2.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.1.0...v0.2.0) (2025-06-13)
 
 ### Features
