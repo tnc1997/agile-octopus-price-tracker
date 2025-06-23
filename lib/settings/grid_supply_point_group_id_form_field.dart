@@ -204,7 +204,7 @@ class _GridSupplyPointGroupIdFormFieldState
         }
 
         return Row(
-          spacing: 16.0,
+          spacing: 8.0,
           children: [
             Expanded(
               child: DropdownButtonFormField<String>(
