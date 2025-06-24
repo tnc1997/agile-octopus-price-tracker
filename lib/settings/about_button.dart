@@ -8,7 +8,9 @@ class AboutButton extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return FilledButton(
       onPressed: () {
         showAboutDialog(

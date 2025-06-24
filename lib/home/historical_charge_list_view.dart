@@ -12,7 +12,9 @@ class HistoricalChargeListView extends StatelessWidget {
   final List<HistoricalCharge> historicalCharges;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return ListView.builder(
       itemBuilder: (context, index) {
         return HistoricalChargeListTile(

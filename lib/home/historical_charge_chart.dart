@@ -20,7 +20,9 @@ class HistoricalChargeChart extends StatelessWidget {
   final List<HistoricalCharge> historicalCharges;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(
+    BuildContext context,
+  ) {
     return SfCartesianChart(
       primaryXAxis: DateTimeAxis(
         title: AxisTitle(
