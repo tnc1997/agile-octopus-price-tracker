@@ -26,7 +26,38 @@ class AboutButton extends StatelessWidget {
               TextSpan(
                 children: [
                   const TextSpan(
-                    text: 'Contains information from ',
+                    text: 'Data provided by ',
+                  ),
+                  TextSpan(
+                    text: 'Octopus Energy',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    recognizer: TapGestureRecognizer()
+                      ..onTap = () async {
+                        final url = Uri.https(
+                          'octopus.energy',
+                        );
+
+                        if (await canLaunchUrl(url)) {
+                          await launchUrl(url);
+                        }
+                      },
+                  ),
+                  const TextSpan(
+                    text: ', who do not endorse this unofficial application.',
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 16.0,
+            ),
+            Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(
+                    text: 'Geocoding provided by ',
                   ),
                   TextSpan(
                     text: 'OpenStreetMap',
