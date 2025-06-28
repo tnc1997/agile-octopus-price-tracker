@@ -17,7 +17,7 @@ class HistoricalChargeListTile extends StatelessWidget {
   ) {
     return ListTile(
       title: Text(
-        DateFormat('Hm').format(
+        DateFormat.Hm().format(
           historicalCharge.validFrom!.toLocal(),
         ),
       ),

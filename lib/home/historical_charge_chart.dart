@@ -25,7 +25,7 @@ class HistoricalChargeChart extends StatelessWidget {
   ) {
     return SfCartesianChart(
       primaryXAxis: DateTimeAxis(
-        dateFormat: DateFormat('Hm'),
+        dateFormat: DateFormat.Hm(),
         crossesAt: 0.0,
       ),
       primaryYAxis: NumericAxis(
