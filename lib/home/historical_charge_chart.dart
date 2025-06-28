@@ -29,6 +29,7 @@ class HistoricalChargeChart extends StatelessWidget {
           text: 'Time',
         ),
         dateFormat: DateFormat('Hm'),
+        crossesAt: 0.0,
       ),
       primaryYAxis: NumericAxis(
         title: AxisTitle(
