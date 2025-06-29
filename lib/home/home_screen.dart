@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'historical_charge_chart.dart';
-import 'historical_charge_list_view.dart';
+import 'historical_charge_scroll_view.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -49,7 +49,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   historicalCharges: historicalCharges,
                 );
               } else {
-                return HistoricalChargeListView(
+                return HistoricalChargeScrollView(
                   historicalCharges: historicalCharges,
                 );
               }
