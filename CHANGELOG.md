@@ -2,6 +2,37 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.4.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.3.0...v0.4.0) (2025-06-30)
+
+### Features
+
+* **common:** add responsive navigation to shell screen ([165461a](https://github.com/tnc1997/agile-octopus-price-tracker/commit/165461a2e80f7b9803d0043cfb00bf500cd7a2d5))
+* **home:** add pinned headers to historical charge scroll view ([1483766](https://github.com/tnc1997/agile-octopus-price-tracker/commit/14837666cdc60625fda9891816f1d4463dfc3326))
+
+### Bug Fixes
+
+* **settings:** grid supply point group id form field spacing ([24c5e72](https://github.com/tnc1997/agile-octopus-price-tracker/commit/24c5e7294257ffbb5bccd760220757273e58f73f))
+
+### Styles
+
+* add trailing comma to build method parameters ([14eef05](https://github.com/tnc1997/agile-octopus-price-tracker/commit/14eef0537972a3ce7388d92c069c3439f81e10ef))
+
+### Code Refactoring
+
+* **common:** add shell navigation rail widget ([0df5d6c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/0df5d6c90fb873811bcc92c7de5cc99c7d96d7d6))
+* **common:** extract shell bottom navigation bar widget ([06fa932](https://github.com/tnc1997/agile-octopus-price-tracker/commit/06fa932aa5d9072f88c64b30645f70f1e47d90a0))
+* convert date format strings to named constructors ([ba8f704](https://github.com/tnc1997/agile-octopus-price-tracker/commit/ba8f704d85305be1bc359ad76a9977d59027334b))
+* **home:** add crosses at to date time axis ([ade6e4e](https://github.com/tnc1997/agile-octopus-price-tracker/commit/ade6e4e13dccf4ab027d58193c90f5413cf6bb22))
+* **home:** remove title from date time axis ([fc47984](https://github.com/tnc1997/agile-octopus-price-tracker/commit/fc47984ad47dd64e2df8d4edd672a5a7fdd6ee66))
+* **settings:** add tariff form card widget ([e4e4a71](https://github.com/tnc1997/agile-octopus-price-tracker/commit/e4e4a715d6b828454d83e3b389bd1e2fb9442189))
+* **settings:** update about dialog children ([89b7c0b](https://github.com/tnc1997/agile-octopus-price-tracker/commit/89b7c0b256c26f1514da56ca11fe15ab6c60db0f))
+* **welcome:** add card widgets to welcome screen ([b9230f6](https://github.com/tnc1997/agile-octopus-price-tracker/commit/b9230f6357708dd974e55d48803264ede4bd06fe))
+* **welcome:** add welcome card widget ([2fedc3a](https://github.com/tnc1997/agile-octopus-price-tracker/commit/2fedc3a79f9ff9d5342c06df5b2f85d982669142))
+
+### Build System
+
+* add collection package ([0dc545a](https://github.com/tnc1997/agile-octopus-price-tracker/commit/0dc545a98037d532445f6eeda558adf6e1d8bb8a))
+
 ## [0.3.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.2.0...v0.3.0) (2025-06-18)
 
 ### Features
