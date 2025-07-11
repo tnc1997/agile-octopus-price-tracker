@@ -42,18 +42,40 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
 
-          return LayoutBuilder(
-            builder: (context, constraints) {
-              if (constraints.maxWidth > 768) {
-                return HistoricalChargeChart(
-                  historicalCharges: historicalCharges,
+          return Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return GridView(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: constraints.maxWidth > 768 ? 2 : 1,
+                    mainAxisSpacing: 16.0,
+                    crossAxisSpacing: 16.0,
+                  ),
+                  children: [
+                    Card(
+                      margin: EdgeInsets.zero,
+                      clipBehavior: Clip.antiAlias,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 16.0,
+                        ),
+                        child: HistoricalChargeChart(
+                          historicalCharges: historicalCharges,
+                        ),
+                      ),
+                    ),
+                    Card(
+                      margin: EdgeInsets.zero,
+                      clipBehavior: Clip.antiAlias,
+                      child: HistoricalChargeScrollView(
+                        historicalCharges: historicalCharges,
+                      ),
+                    ),
+                  ],
                 );
-              } else {
-                return HistoricalChargeScrollView(
-                  historicalCharges: historicalCharges,
-                );
-              }
-            },
+              },
+            ),
           );
         }
 
