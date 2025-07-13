@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
+import 'historical_charge_card.dart';
 import 'historical_charge_chart_card.dart';
 import 'historical_charge_scroll_view_card.dart';
 
@@ -43,21 +45,84 @@ class _HomeScreenState extends State<HomeScreen> {
           );
 
           return Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: const EdgeInsets.all(8.0),
             child: LayoutBuilder(
               builder: (context, constraints) {
-                return GridView(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: constraints.maxWidth > 768 ? 2 : 1,
-                    mainAxisSpacing: 16.0,
-                    crossAxisSpacing: 16.0,
-                  ),
-                  children: [
-                    HistoricalChargeChartCard(
-                      historicalCharges: historicalCharges,
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.all(8.0),
+                      sliver: SliverGrid(
+                        delegate: SliverChildListDelegate.fixed(
+                          [
+                            HistoricalChargeCard(
+                              historicalCharge: historicalCharges[0],
+                              leading: Tooltip(
+                                message: 'Current',
+                                child: Icon(Icons.circle_outlined),
+                              ),
+                            ),
+                            HistoricalChargeCard(
+                              historicalCharge: historicalCharges[1],
+                              leading: Tooltip(
+                                message: 'Next',
+                                child: Icon(Icons.arrow_circle_right_outlined),
+                              ),
+                            ),
+                            HistoricalChargeCard(
+                              historicalCharge: minBy(
+                                historicalCharges,
+                                (historicalCharge) {
+                                  return historicalCharge.valueIncVat!;
+                                },
+                              )!,
+                              leading: Tooltip(
+                                message: 'Lowest',
+                                child: Icon(Icons.arrow_circle_down_outlined),
+                              ),
+                            ),
+                            HistoricalChargeCard(
+                              historicalCharge: maxBy(
+                                historicalCharges,
+                                (historicalCharge) {
+                                  return historicalCharge.valueIncVat!;
+                                },
+                              )!,
+                              leading: Tooltip(
+                                message: 'Highest',
+                                child: Icon(Icons.arrow_circle_up_outlined),
+                              ),
+                            ),
+                          ],
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: constraints.maxWidth > 768 ? 4 : 2,
+                          mainAxisSpacing: 16.0,
+                          crossAxisSpacing: 16.0,
+                          childAspectRatio: 2.0,
+                        ),
+                      ),
                     ),
-                    HistoricalChargeScrollViewCard(
-                      historicalCharges: historicalCharges,
+                    SliverPadding(
+                      padding: const EdgeInsets.all(8.0),
+                      sliver: SliverGrid(
+                        delegate: SliverChildListDelegate.fixed(
+                          [
+                            HistoricalChargeChartCard(
+                              historicalCharges: historicalCharges,
+                            ),
+                            HistoricalChargeScrollViewCard(
+                              historicalCharges: historicalCharges,
+                            ),
+                          ],
+                        ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: constraints.maxWidth > 768 ? 2 : 1,
+                          mainAxisSpacing: 16.0,
+                          crossAxisSpacing: 16.0,
+                          childAspectRatio: 1.0,
+                        ),
+                      ),
                     ),
                   ],
                 );
