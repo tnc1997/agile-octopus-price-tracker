@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
-import 'historical_charge_chart.dart';
+import 'historical_charge_chart_card.dart';
 import 'historical_charge_scroll_view.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -53,17 +53,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisSpacing: 16.0,
                   ),
                   children: [
-                    Card(
-                      margin: EdgeInsets.zero,
-                      clipBehavior: Clip.antiAlias,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 16.0,
-                        ),
-                        child: HistoricalChargeChart(
-                          historicalCharges: historicalCharges,
-                        ),
-                      ),
+                    HistoricalChargeChartCard(
+                      historicalCharges: historicalCharges,
                     ),
                     Card(
                       margin: EdgeInsets.zero,
