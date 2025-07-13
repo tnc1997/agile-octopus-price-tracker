@@ -40,12 +40,17 @@ class HistoricalChargeCard extends StatelessWidget {
                           ? CrossAxisAlignment.start
                           : CrossAxisAlignment.start,
               children: [
-                Text(
-                  '${DateFormat.Hm().format(
+                Tooltip(
+                  message: DateFormat.yMMMMEEEEd().format(
                     historicalCharge.validFrom!.toLocal(),
-                  )} - ${DateFormat.Hm().format(
-                    historicalCharge.validTo!.toLocal(),
-                  )}',
+                  ),
+                  child: Text(
+                    '${DateFormat.Hm().format(
+                      historicalCharge.validFrom!.toLocal(),
+                    )} - ${DateFormat.Hm().format(
+                      historicalCharge.validTo!.toLocal(),
+                    )}',
+                  ),
                 ),
                 Text(
                   NumberFormat('0.00p/kWh').format(
