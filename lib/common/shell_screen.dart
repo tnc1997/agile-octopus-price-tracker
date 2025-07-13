@@ -23,7 +23,6 @@ class ShellScreen extends StatelessWidget {
               child: Row(
                 children: [
                   const ShellNavigationRail(),
-                  const VerticalDivider(),
                   Expanded(
                     child: child,
                   ),

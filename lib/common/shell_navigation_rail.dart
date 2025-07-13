@@ -15,6 +15,7 @@ class ShellNavigationRail extends StatelessWidget {
     BuildContext context,
   ) {
     return NavigationRail(
+      backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
       destinations: const [
         NavigationRailDestination(
           icon: Icon(Icons.home),
