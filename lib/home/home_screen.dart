@@ -6,7 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart';
 import 'historical_charge_chart_card.dart';
-import 'historical_charge_scroll_view.dart';
+import 'historical_charge_scroll_view_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -56,12 +56,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     HistoricalChargeChartCard(
                       historicalCharges: historicalCharges,
                     ),
-                    Card(
-                      margin: EdgeInsets.zero,
-                      clipBehavior: Clip.antiAlias,
-                      child: HistoricalChargeScrollView(
-                        historicalCharges: historicalCharges,
-                      ),
+                    HistoricalChargeScrollViewCard(
+                      historicalCharges: historicalCharges,
                     ),
                   ],
                 );
