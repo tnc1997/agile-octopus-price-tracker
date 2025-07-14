@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.4.0...v0.5.0) (2025-07-14)
+
+### Features
+
+* **home:** add grid view to home screen ([5ade77b](https://github.com/tnc1997/agile-octopus-price-tracker/commit/5ade77b054bfa84d04e539d9bf4eb30c9a132442))
+* **home:** replace grid view with custom scroll view ([ba4d176](https://github.com/tnc1997/agile-octopus-price-tracker/commit/ba4d176b343086fffaa9313896e015074025555f))
+
+### Code Refactoring
+
+* **common:** replace vertical divider with background color ([f8ce02d](https://github.com/tnc1997/agile-octopus-price-tracker/commit/f8ce02d32b741da6b35928dd2424df152e5d66ec))
+* **home:** add historical charge card widget ([228b025](https://github.com/tnc1997/agile-octopus-price-tracker/commit/228b025102aaefc1a8aaa5b1fac56e37b0ae82bd))
+* **home:** add tooltip to historical charge card ([3f6a0a8](https://github.com/tnc1997/agile-octopus-price-tracker/commit/3f6a0a864ccea4efba631e4517f4f229108e4207))
+* **home:** extract historical charge chart card widget ([2cd6164](https://github.com/tnc1997/agile-octopus-price-tracker/commit/2cd6164db499e753660897f563303f8a067aa433))
+* **home:** extract historical charge scroll view card widget ([3b8d8f1](https://github.com/tnc1997/agile-octopus-price-tracker/commit/3b8d8f1dc44db81070443939347887f5a178ac8d))
+
 ## [0.4.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.3.0...v0.4.0) (2025-06-30)
 
 ### Features
