@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:nominatim_api_client/nominatim_api_client.dart';
 import 'package:provider/provider.dart';
 
 import '../main.dart';
@@ -163,7 +164,7 @@ class _GridSupplyPointGroupIdFormFieldState
                       position.longitude,
                     );
 
-                    postcode = place.address!.postcode!;
+                    postcode = place.address!['postcode']!;
                   } catch (e) {
                     messenger.showSnackBar(
                       const SnackBar(
