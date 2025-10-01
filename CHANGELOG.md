@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [0.5.1](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.5.0...v0.5.1) (2025-10-01)
+
+### Build System
+
+* add nominatim_api_client package ([ce3083a](https://github.com/tnc1997/agile-octopus-price-tracker/commit/ce3083a6e7c8e8679464b67591273d87515c86d2))
+
+### Code Refactoring
+
+* migrate nominatim api client ([dab497c](https://github.com/tnc1997/agile-octopus-price-tracker/commit/dab497c85e69c75da1bf120c6c9dc2e7e7c19054))
+
 ## [0.5.0](https://github.com/tnc1997/agile-octopus-price-tracker/compare/v0.4.0...v0.5.0) (2025-07-14)
 
 ### Features
