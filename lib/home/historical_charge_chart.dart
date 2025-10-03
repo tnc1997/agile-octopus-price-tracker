@@ -36,6 +36,32 @@ class HistoricalChargeChart extends StatelessWidget {
       ),
       trackballBehavior: TrackballBehavior(
         enable: true,
+        builder: (context, details) {
+          final historicalCharge = historicalCharges[details.pointIndex!];
+
+          return DecoratedBox(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Text(
+                '${DateFormat.Hm().format(
+                  historicalCharge.validFrom!.toLocal(),
+                )} - ${DateFormat.Hm().format(
+                  historicalCharge.validTo!.toLocal(),
+                )}\n${NumberFormat('0.00p/kWh').format(
+                  historicalCharge.valueIncVat,
+                )}',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 12.0,
+                ),
+              ),
+            ),
+          );
+        },
       ),
       series: [
         StepLineSeries<HistoricalCharge, DateTime>(
