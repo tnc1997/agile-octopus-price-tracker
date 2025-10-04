@@ -62,6 +62,21 @@ class _TariffFormState extends State<TariffForm> {
 
     super.dispose();
   }
+
+  @override
+  void initState() {
+    super.initState();
+
+    final preferences = context.read<SharedPreferencesAsync>();
+
+    preferences.getString('grid_supply_point_group_id').then((value) {
+      _gridSupplyPointGroupIdNotifier.value = value;
+    });
+
+    preferences.getString('import_product_code').then((value) {
+      _importProductCodeNotifier.value = value;
+    });
+  }
 }
 
 class _SaveButton extends StatelessWidget {

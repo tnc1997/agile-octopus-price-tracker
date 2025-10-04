@@ -81,7 +81,7 @@ class _GridSupplyPointGroupIdFormFieldState
                   builder: (context, value, child) {
                     return DropdownButtonFormField<String>(
                       items: items,
-                      value: value,
+                      initialValue: value,
                       onChanged: (value) {
                         widget.notifier.value = value;
                       },

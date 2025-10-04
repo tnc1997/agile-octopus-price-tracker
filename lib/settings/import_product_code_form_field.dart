@@ -48,7 +48,7 @@ class ImportProductCodeFormField extends StatelessWidget {
       builder: (context, value, child) {
         return DropdownButtonFormField<String>(
           items: _items,
-          value: value,
+          initialValue: value,
           onChanged: (value) {
             notifier.value = value;
           },
