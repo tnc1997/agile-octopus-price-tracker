@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'about_button.dart';
-import 'tariff_form.dart';
+import 'color_stops_form_card.dart';
+import 'tariff_form_card.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({
@@ -20,10 +21,8 @@ class SettingsScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           spacing: 16.0,
           children: [
-            Card(
-              margin: EdgeInsets.zero,
-              child: TariffForm(),
-            ),
+            TariffFormCard(),
+            ColorStopsFormCard(),
             AboutButton(),
           ],
         ),
