@@ -125,6 +125,34 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
       ),
     );
   }
+
+  @override
+  void initState() {
+    super.initState();
+
+    final preferences = context.read<SharedPreferencesAsync>();
+
+    preferences.getString('color_stops').then((stops) {
+      if (stops != null) {
+        for (final stop in (json.decode(stops) as List<dynamic>)) {
+          switch (stop['price']) {
+            case 10.00:
+              setState(() {
+                _lowColor = Color(stop['color']);
+              });
+            case 20.00:
+              setState(() {
+                _mediumColor = Color(stop['color']);
+              });
+            case 30.00:
+              setState(() {
+                _highColor = Color(stop['color']);
+              });
+          }
+        }
+      }
+    });
+  }
 }
 
 class _SaveButton extends StatelessWidget {
