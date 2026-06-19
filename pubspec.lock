@@ -480,6 +480,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.0"
+  octopus_energy_api_client:
+    dependency: "direct main"
+    description:
+      name: octopus_energy_api_client
+      sha256: "502c8d20362313bf6719b52e916ba81847dd0bf3219331b967ef498e8191115f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   package_config:
     dependency: transitive
     description:
