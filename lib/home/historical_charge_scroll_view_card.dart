@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:octopus_energy_api_client/v1.dart';
 
-import '../main.dart';
 import 'historical_charge_scroll_view.dart';
 
 class HistoricalChargeScrollViewCard extends StatelessWidget {

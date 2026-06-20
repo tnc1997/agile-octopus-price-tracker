@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -139,7 +140,7 @@ class _SaveButton extends StatelessWidget {
             final Product product;
 
             try {
-              product = await client.products.retrieveAProduct(
+              product = await client.products.retrieveProduct(
                 importProductCodeNotifier.value!,
                 tariffsActiveAt: DateTime.now().toUtc(),
               );

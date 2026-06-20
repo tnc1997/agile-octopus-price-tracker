@@ -2,12 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../common/num_extensions.dart';
-import '../main.dart';
 
 class HistoricalChargeChart extends StatefulWidget {
   const HistoricalChargeChart({
@@ -81,22 +81,22 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                   return datum.validFrom!.toLocal();
                 },
                 yValueMapper: (datum, index) {
-                  return datum.valueIncVat!;
+                  return datum.valueIncVat;
                 },
                 sortFieldValueMapper: (datum, index) {
                   return datum.validFrom!.toLocal();
                 },
                 pointColorMapper: (datum, index) {
                   for (var i = 0; i < stops.length - 1; i++) {
-                    if (datum.valueIncVat! < stops[i].$2) {
+                    if (datum.valueIncVat < stops[i].$2) {
                       return stops[i].$1;
                     }
 
-                    if (datum.valueIncVat! < stops[i + 1].$2) {
+                    if (datum.valueIncVat < stops[i + 1].$2) {
                       return Color.lerp(
                         stops[i].$1,
                         stops[i + 1].$1,
-                        datum.valueIncVat!.remap(
+                        datum.valueIncVat.remap(
                           stops[i].$2,
                           stops[i + 1].$2,
                           0,

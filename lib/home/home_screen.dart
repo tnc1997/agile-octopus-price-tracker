@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../main.dart';
 import 'historical_charge_card.dart';
 import 'historical_charge_chart_card.dart';
 import 'historical_charge_scroll_view_card.dart';
@@ -70,10 +70,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             HistoricalChargeCard(
-                              historicalCharge: minBy(
+                              historicalCharge: minBy<HistoricalCharge, double>(
                                 historicalCharges,
                                 (historicalCharge) {
-                                  return historicalCharge.valueIncVat!;
+                                  return historicalCharge.valueIncVat;
                                 },
                               )!,
                               leading: Tooltip(
@@ -82,10 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             HistoricalChargeCard(
-                              historicalCharge: maxBy(
+                              historicalCharge: maxBy<HistoricalCharge, double>(
                                 historicalCharges,
                                 (historicalCharge) {
-                                  return historicalCharge.valueIncVat!;
+                                  return historicalCharge.valueIncVat;
                                 },
                               )!,
                               leading: Tooltip(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:nominatim_api_client/nominatim_api_client.dart';
+import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 
 import '../main.dart';
@@ -184,7 +185,7 @@ class _GridSupplyPointGroupIdFormFieldState
                       postcode: postcode,
                     );
 
-                    groupId = list.results!.first.groupId!;
+                    groupId = list.results.first.groupId;
                   } catch (e) {
                     messenger.showSnackBar(
                       const SnackBar(
