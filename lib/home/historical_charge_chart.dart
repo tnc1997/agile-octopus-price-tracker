@@ -36,7 +36,16 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
         if (snapshot.data case final stops?) {
           return SfCartesianChart(
             primaryXAxis: DateTimeAxis(
-              dateFormat: DateFormat.Hm(),
+              axisLabelFormatter: (details) {
+                final date = DateTime.fromMillisecondsSinceEpoch(
+                  details.value.toInt(),
+                ).toLocal();
+
+                return ChartAxisLabel(
+                  '${DateFormat.Hm().format(date)}\n${DateFormat.EEEE().format(date)}',
+                  details.textStyle,
+                );
+              },
             ),
             primaryYAxis: NumericAxis(
               title: AxisTitle(
