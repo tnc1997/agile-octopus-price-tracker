@@ -37,13 +37,18 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
           return SfCartesianChart(
             primaryXAxis: DateTimeAxis(
               dateFormat: DateFormat.Hm(),
-              crossesAt: 0.0,
             ),
             primaryYAxis: NumericAxis(
               title: AxisTitle(
                 text: 'Price (p/kWh)',
               ),
               numberFormat: NumberFormat('0.00'),
+              plotBands: [
+                PlotBand(
+                  start: 0,
+                  end: 0,
+                ),
+              ],
             ),
             trackballBehavior: TrackballBehavior(
               enable: true,
