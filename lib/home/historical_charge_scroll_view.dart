@@ -20,7 +20,7 @@ class HistoricalChargeScrollView extends StatelessWidget {
     final map = groupBy(
       historicalCharges,
       (historicalCharge) {
-        return DateFormat.yMMMMEEEEd().format(
+        return DateFormat.EEEE().format(
           historicalCharge.validFrom!.toLocal(),
         );
       },
