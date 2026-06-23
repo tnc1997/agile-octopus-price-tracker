@@ -1,3 +1,32 @@
+## [0.6.0] - 2026-06-23
+
+### 🚀 Features
+
+- Add time period to chart trackball (#5)
+- *(settings)* Add color stops form (#6)
+- *(settings)* Add initial values to tariff form (#9)
+- *(settings)* Add initial values to color stops form (#10)
+- *(home)* Add day of week to historical charge chart x axis labels
+- *(home)* Simplify historical charge scroll view date format
+
+### 💼 Other
+
+- Add octopus_energy_api_client package
+- *(android)* Bump gradle and kotlin
+- *(android)* Add file input stream import
+- *(android)* Add properties import
+
+### 🚜 Refactor
+
+- Migrate octopus energy api client
+- *(home)* Replace x axis crosses at with y axis plot band
+
+### ⚙️ Miscellaneous Tasks
+
+- Update license
+- Add directives ordering linter rule
+- Update copyright year
+- Regenerate changelog using git-cliff
 ## [0.5.1] - 2025-10-01
 
 ### 💼 Other
