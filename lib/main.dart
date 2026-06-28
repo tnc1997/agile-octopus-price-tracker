@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'common/shell_route.dart';
+import 'forecast/seasonal_average_lookup_service.dart';
 import 'welcome/welcome_route.dart';
 
 void main() {
@@ -28,6 +29,17 @@ void main() {
           create: (context) {
             return SharedPreferencesAsync();
           },
+        ),
+        // Begin loading the seasonal average lookup table at start-up (lazy:
+        // false) so it is ready by the time the forecast needs it. The
+        // value is null until the load completes, so consumers read
+        // SeasonalAverageLookupService? and handle the loading state.
+        FutureProvider(
+          create: (context) {
+            return SeasonalAverageLookupService.load();
+          },
+          initialData: null,
+          lazy: false,
         ),
       ],
       child: const MyApp(),

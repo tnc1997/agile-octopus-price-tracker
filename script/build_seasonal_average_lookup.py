@@ -72,7 +72,7 @@ Data sources
 
 Output
 ------
-script/data/seasonal_average_lookup.json
+assets/seasonal_average_lookup.json
 
 A JSON document with two top-level keys:
   generation_thresholds_mw — the (data-derived) tercile thresholds, given as the
@@ -106,7 +106,7 @@ the price fields apart from the child dimensions at every node.
 
 The output is written as minified JSON (no indentation) to keep it small enough
 to bundle as a Flutter asset. To inspect it, pipe it through a formatter, e.g.
-"python3 -m json.tool script/data/seasonal_average_lookup.json".
+"python3 -m json.tool assets/seasonal_average_lookup.json".
 
 Usage
 -----
@@ -139,8 +139,12 @@ DATA_DIR = os.path.join(os.path.dirname(__file__), "data")
 PRICE_PATH = os.path.join(DATA_DIR, "agile_octopus_price_data.csv")
 GENERATION_PATH = os.path.join(DATA_DIR, "neso_generation_data.csv")
 
-# Output lookup table.
-OUTPUT_PATH = os.path.join(DATA_DIR, "seasonal_average_lookup.json")
+# Output lookup table. Written to the app's assets directory (tracked in version
+# control) rather than the git-ignored script/data directory used for the raw
+# inputs, because this file is bundled as a Flutter asset.
+OUTPUT_PATH = os.path.join(
+    os.path.dirname(__file__), "..", "assets", "seasonal_average_lookup.json"
+)
 
 # NESO settlement dates/periods are expressed in UK local clock time. Prices are
 # stored in UTC, so we convert them to this zone before deriving the join key.
