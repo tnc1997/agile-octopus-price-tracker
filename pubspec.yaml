@@ -43,6 +43,7 @@ dependencies:
   provider: ^6.0.0
   shared_preferences: ^2.0.0
   syncfusion_flutter_charts: ^29.0.0
+  timezone: ^0.11.0
   url_launcher: ^6.0.0
 
 dev_dependencies:
@@ -61,6 +62,12 @@ flutter:
   # included with your application, so that you can use the icons in
   # the material Icons class.
   uses-material-design: true
+
+  # The seasonal average price lookup table built by
+  # script/build_seasonal_average_lookup.py, which writes its output here.
+  # Regenerating the table refreshes the bundled asset in place.
+  assets:
+    - assets/seasonal_average_lookup.json
 
   # To add assets to your application, add an assets section, like this:
   # assets:
