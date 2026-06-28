@@ -56,6 +56,8 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                 PlotBand(
                   start: 0,
                   end: 0,
+                  borderColor: Theme.of(context).colorScheme.onSurface,
+                  borderWidth: 1,
                 ),
               ],
             ),
