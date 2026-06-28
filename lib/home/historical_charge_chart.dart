@@ -103,6 +103,10 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                   return datum.validFrom!.toLocal();
                 },
                 pointColorMapper: (datum, index) {
+                  if (datum.valueIncVat < 0) {
+                    return Colors.blue;
+                  }
+
                   for (var i = 0; i < stops.length - 1; i++) {
                     if (datum.valueIncVat < stops[i].$2) {
                       return stops[i].$1;
