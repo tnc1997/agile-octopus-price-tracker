@@ -17,6 +17,7 @@ class ColorStopsForm extends StatefulWidget {
 }
 
 class _ColorStopsFormState extends State<ColorStopsForm> {
+  var _negativeColor = Color(0xff00ffff);
   var _lowColor = Color(0xff00ff00);
   var _mediumColor = Color(0xffffff00);
   var _highColor = Color(0xffff0000);
@@ -32,6 +33,34 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         spacing: 16.0,
         children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text('< 0.00p/kWh'),
+              ),
+              ColorIndicator(
+                onSelect: () async {
+                  final negativeColor = await showColorPickerDialog(
+                    context,
+                    _negativeColor,
+                    pickersEnabled: {
+                      ColorPickerType.both: false,
+                      ColorPickerType.primary: false,
+                      ColorPickerType.accent: false,
+                      ColorPickerType.bw: false,
+                      ColorPickerType.custom: false,
+                      ColorPickerType.wheel: true,
+                    },
+                  );
+
+                  setState(() {
+                    _negativeColor = negativeColor;
+                  });
+                },
+                color: _negativeColor,
+              ),
+            ],
+          ),
           Row(
             children: [
               Expanded(
@@ -117,6 +146,7 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
             ],
           ),
           _SaveButton(
+            negativeColor: _negativeColor,
             lowColor: _lowColor,
             mediumColor: _mediumColor,
             highColor: _highColor,
@@ -136,6 +166,10 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
       if (stops != null) {
         for (final stop in (json.decode(stops) as List<dynamic>)) {
           switch (stop['price']) {
+            case -1.00:
+              setState(() {
+                _negativeColor = Color(stop['color']);
+              });
             case 10.00:
               setState(() {
                 _lowColor = Color(stop['color']);
@@ -157,10 +191,13 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
 
 class _SaveButton extends StatelessWidget {
   const _SaveButton({
+    required this.negativeColor,
     required this.lowColor,
     required this.mediumColor,
     required this.highColor,
   });
+
+  final Color negativeColor;
 
   final Color lowColor;
 
@@ -181,6 +218,10 @@ class _SaveButton extends StatelessWidget {
           await preferences.setString(
             'color_stops',
             json.encode([
+              {
+                'color': negativeColor.toARGB32(),
+                'price': -1.00,
+              },
               {
                 'color': lowColor.toARGB32(),
                 'price': 10.00,
