@@ -104,7 +104,13 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                 },
                 pointColorMapper: (datum, index) {
                   if (datum.valueIncVat < 0) {
-                    return Colors.blue;
+                    for (final stop in stops) {
+                      if (stop.$2 < 0) {
+                        return stop.$1;
+                      }
+                    }
+
+                    return Color(0xff00ffff);
                   }
 
                   for (var i = 0; i < stops.length - 1; i++) {
@@ -149,6 +155,7 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
     _future = preferences.getString('color_stops').then((stops) {
       if (stops == null) {
         return [
+          (Color(0xff2196f3), -1.00),
           (Color(0xff00ff00), 10.00),
           (Color(0xffffff00), 20.00),
           (Color(0xffff0000), 30.00),
