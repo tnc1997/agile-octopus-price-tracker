@@ -4,15 +4,25 @@ import 'package:nominatim_api_client/nominatim_api_client.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest.dart';
 
 import 'common/shell_route.dart';
+import 'forecast/forecast_service.dart';
+import 'forecast/neso_api_client.dart';
 import 'forecast/seasonal_average_lookup_service.dart';
 import 'welcome/welcome_route.dart';
 
 void main() {
+  initializeTimeZones();
+
   runApp(
     MultiProvider(
       providers: [
+        Provider(
+          create: (context) {
+            return NesoApiClient();
+          },
+        ),
         Provider(
           create: (context) {
             return NominatimApiClient(
@@ -40,6 +50,23 @@ void main() {
           },
           initialData: null,
           lazy: false,
+        ),
+        // Compose the forecast service from the NESO client and the lookup
+        // table. The latter is null until its start-up load completes, so the
+        // service is itself null until then; consumers read ForecastService?
+        // and hold off forecasting until it is ready.
+        ProxyProvider2<NesoApiClient, SeasonalAverageLookupService?,
+            ForecastService?>(
+          update: (context, nesoApiClient, seasonalAverageLookupService, _) {
+            if (seasonalAverageLookupService == null) {
+              return null;
+            }
+
+            return ForecastService(
+              nesoApiClient: nesoApiClient,
+              seasonalAverageLookupService: seasonalAverageLookupService,
+            );
+          },
         ),
       ],
       child: const MyApp(),
