@@ -1,5 +1,6 @@
 import 'package:agile_octopus_price_tracker/forecast/seasonal_average_lookup_service.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:timezone/data/latest.dart';
 
 /// A small, hand-built lookup document with known values, so the logic tests can
 /// assert exact results without depending on the real (and regenerated) asset.
@@ -91,6 +92,8 @@ void main() {
 
       setUpAll(
         () {
+          initializeTimeZones();
+
           service = SeasonalAverageLookupService.fromJson(_lookup);
         },
       );

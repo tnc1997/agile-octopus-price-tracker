@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 /// Loads and queries the seasonal average price lookup table.
@@ -78,7 +77,6 @@ class SeasonalAverageLookupService {
     thresholds.sort((a, b) => a.bound.compareTo(b.bound));
 
     // Resolve Europe/London, the zone the build script bucketed every row in.
-    tz.initializeTimeZones();
     final location = tz.getLocation('Europe/London');
 
     return SeasonalAverageLookupService._(
