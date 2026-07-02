@@ -124,7 +124,10 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                   if (forecastCharges.isNotEmpty)
                     StepLineSeries<ForecastCharge, DateTime>(
                       dataSource: forecastCharges,
+                      // Dash and fade the line so the forecast reads as an
+                      // estimate rather than a confirmed Agile Octopus rate.
                       dashArray: const [6.0, 4.0],
+                      opacity: 0.5,
                       xValueMapper: (datum, index) {
                         return datum.validFrom.toLocal();
                       },
