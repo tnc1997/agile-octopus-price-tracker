@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:octopus_energy_api_client/v1.dart';
@@ -13,8 +14,11 @@ import '../forecast/forecast_service.dart';
 class HistoricalChargeChart extends StatefulWidget {
   const HistoricalChargeChart({
     super.key,
+    required this.forecastCharges,
     required this.historicalCharges,
   });
+
+  final List<ForecastCharge> forecastCharges;
 
   final List<HistoricalCharge> historicalCharges;
 
@@ -37,113 +41,129 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
 
   /// The shared preferences store, read once from the provider in [initState].
   ///
-  /// Source of the persisted `color_stops` gradient and the
-  /// `grid_supply_point_group_id` the forecast is built for. Retained so both the
-  /// initial color-stop load and the later forecast build can read from the same
-  /// instance.
+  /// Source of the persisted `color_stops` gradient.
   late final SharedPreferencesAsync _preferences;
-
-  /// The forecast series, built once the forecast service is ready.
-  ///
-  /// Null until then, so the chart renders the confirmed prices on their own
-  /// while the (start-up) table load is still in flight, and gains the forecast
-  /// series once it completes. Guarded in [build] so it is built only once.
-  Future<List<ForecastCharge>>? _forecastCharges;
 
   @override
   Widget build(
     BuildContext context,
   ) {
-    // The forecast service is null until the lookup table it composes has
-    // loaded at start-up, flipping to ready when the load completes. Kick off
-    // the forecast the first time it is ready; keeping it to a single build.
-    if (context.watch<ForecastService?>() case final service?) {
-      _forecastCharges ??= _getForecastCharges(service);
-    }
-
     return FutureBuilder(
       future: _colorStops,
       builder: (context, snapshot) {
         if (snapshot.data case final colorStops?) {
-          return FutureBuilder(
-            future: _forecastCharges,
-            builder: (context, snapshot) {
-              // Default to an empty series until (or unless) the forecast is
-              // ready, so the confirmed prices render without waiting on it.
-              final forecastCharges = snapshot.data ?? [];
+          // Derive the axis extent from the data: the earliest slot start to the
+          // latest slot end, spanning both the confirmed prices and the forecast
+          // (the parent renders the chart only once the forecast has resolved).
+          // The bounds use the same local instants the series plot against, and
+          // are null when there is no data at all, leaving the axis to fall back
+          // to auto-ranging.
+          final bounds = <DateTime>[
+            for (final historicalCharge in widget.historicalCharges) ...[
+              historicalCharge.validFrom!.toLocal(),
+              historicalCharge.validTo!.toLocal(),
+            ],
+            for (final forecastCharge in widget.forecastCharges) ...[
+              forecastCharge.validFrom.toLocal(),
+              forecastCharge.validTo.toLocal(),
+            ],
+          ];
 
-              return SfCartesianChart(
-                primaryXAxis: DateTimeAxis(
-                  axisLabelFormatter: (details) {
-                    final date = DateTime.fromMillisecondsSinceEpoch(
-                      details.value.toInt(),
-                    ).toLocal();
+          final minimum = bounds.minOrNull;
+          final maximum = bounds.maxOrNull;
 
-                    return ChartAxisLabel(
-                      '${DateFormat.Hm().format(date)}\n${DateFormat.EEEE().format(date)}',
-                      details.textStyle,
-                    );
+          // Open on a day-ahead window from the first slot — the current and
+          // upcoming confirmed prices plus the start of the forecast — rather
+          // than the whole week at once. Anchoring on the first slot start keeps
+          // the current slot flush to the left edge; users can pan or zoom out to
+          // the derived extent.
+          final initialVisibleMaximum = minimum?.add(
+            const Duration(
+              days: 1,
+            ),
+          );
+
+          return SfCartesianChart(
+            primaryXAxis: DateTimeAxis(
+              minimum: minimum,
+              maximum: maximum,
+              initialVisibleMinimum: minimum,
+              initialVisibleMaximum: initialVisibleMaximum,
+              axisLabelFormatter: (details) {
+                final date = DateTime.fromMillisecondsSinceEpoch(
+                  details.value.toInt(),
+                ).toLocal();
+
+                return ChartAxisLabel(
+                  '${DateFormat.Hm().format(date)}\n${DateFormat.EEEE().format(date)}',
+                  details.textStyle,
+                );
+              },
+            ),
+            primaryYAxis: NumericAxis(
+              title: AxisTitle(
+                text: 'Price (p/kWh)',
+              ),
+              numberFormat: NumberFormat('0.00'),
+              plotBands: [
+                PlotBand(
+                  start: 0,
+                  end: 0,
+                  borderColor: Theme.of(context).colorScheme.onSurface,
+                  borderWidth: 1,
+                ),
+              ],
+            ),
+            zoomPanBehavior: ZoomPanBehavior(
+              enablePinching: true,
+              enableDoubleTapZooming: true,
+              enablePanning: true,
+              enableMouseWheelZooming: true,
+              zoomMode: ZoomMode.x,
+            ),
+            trackballBehavior: TrackballBehavior(
+              enable: true,
+              builder: (context, details) {
+                return _buildTrackball(details);
+              },
+            ),
+            series: [
+              StepLineSeries<HistoricalCharge, DateTime>(
+                dataSource: widget.historicalCharges,
+                xValueMapper: (datum, index) {
+                  return datum.validFrom!.toLocal();
+                },
+                yValueMapper: (datum, index) {
+                  return datum.valueIncVat;
+                },
+                sortFieldValueMapper: (datum, index) {
+                  return datum.validFrom!.toLocal();
+                },
+                pointColorMapper: (datum, index) {
+                  return _calculateColor(datum.valueIncVat, colorStops);
+                },
+              ),
+              if (widget.forecastCharges.isNotEmpty)
+                StepLineSeries<ForecastCharge, DateTime>(
+                  dataSource: widget.forecastCharges,
+                  // Dash and fade the line so the forecast reads as an
+                  // estimate rather than a confirmed Agile Octopus rate.
+                  dashArray: const [6.0, 4.0],
+                  opacity: 0.5,
+                  xValueMapper: (datum, index) {
+                    return datum.validFrom.toLocal();
+                  },
+                  yValueMapper: (datum, index) {
+                    return datum.valueIncVat;
+                  },
+                  sortFieldValueMapper: (datum, index) {
+                    return datum.validFrom.toLocal();
+                  },
+                  pointColorMapper: (datum, index) {
+                    return _calculateColor(datum.valueIncVat, colorStops);
                   },
                 ),
-                primaryYAxis: NumericAxis(
-                  title: AxisTitle(
-                    text: 'Price (p/kWh)',
-                  ),
-                  numberFormat: NumberFormat('0.00'),
-                  plotBands: [
-                    PlotBand(
-                      start: 0,
-                      end: 0,
-                      borderColor: Theme.of(context).colorScheme.onSurface,
-                      borderWidth: 1,
-                    ),
-                  ],
-                ),
-                trackballBehavior: TrackballBehavior(
-                  enable: true,
-                  builder: (context, details) {
-                    return _buildTrackball(details, forecastCharges);
-                  },
-                ),
-                series: [
-                  StepLineSeries<HistoricalCharge, DateTime>(
-                    dataSource: widget.historicalCharges,
-                    xValueMapper: (datum, index) {
-                      return datum.validFrom!.toLocal();
-                    },
-                    yValueMapper: (datum, index) {
-                      return datum.valueIncVat;
-                    },
-                    sortFieldValueMapper: (datum, index) {
-                      return datum.validFrom!.toLocal();
-                    },
-                    pointColorMapper: (datum, index) {
-                      return _calculateColor(datum.valueIncVat, colorStops);
-                    },
-                  ),
-                  if (forecastCharges.isNotEmpty)
-                    StepLineSeries<ForecastCharge, DateTime>(
-                      dataSource: forecastCharges,
-                      // Dash and fade the line so the forecast reads as an
-                      // estimate rather than a confirmed Agile Octopus rate.
-                      dashArray: const [6.0, 4.0],
-                      opacity: 0.5,
-                      xValueMapper: (datum, index) {
-                        return datum.validFrom.toLocal();
-                      },
-                      yValueMapper: (datum, index) {
-                        return datum.valueIncVat;
-                      },
-                      sortFieldValueMapper: (datum, index) {
-                        return datum.validFrom.toLocal();
-                      },
-                      pointColorMapper: (datum, index) {
-                        return _calculateColor(datum.valueIncVat, colorStops);
-                      },
-                    ),
-                ],
-              );
-            },
+            ],
           );
         }
 
@@ -180,20 +200,20 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
   ///
   /// The chart draws two series — the confirmed prices first and, when there is
   /// one, the forecast second — so [TrackballDetails.seriesIndex] tells which
-  /// list the touched point belongs to: index 1 is a [ForecastCharge] from
-  /// [forecastCharges], and anything else is a confirmed `HistoricalCharge` from
-  /// the widget's `historicalCharges`. Picking the matching list matters because
-  /// [TrackballDetails.pointIndex] is relative to its own series, so indexing the
-  /// other list would mislabel the point or, where the forecast runs longer than
-  /// the confirmed prices, throw a range error. Both charge types carry the same
-  /// three values the label needs, which are read into shared locals here.
+  /// list the touched point belongs to: index 1 is a [ForecastCharge] from the
+  /// widget's `forecastCharges`, and anything else is a confirmed
+  /// `HistoricalCharge` from its `historicalCharges`. Picking the matching list
+  /// matters because [TrackballDetails.pointIndex] is relative to its own series,
+  /// so indexing the other list would mislabel the point or, where the forecast
+  /// runs longer than the confirmed prices, throw a range error. Both charge
+  /// types carry the same three values the label needs, which are read into
+  /// shared locals here.
   ///
   /// The result is a small white rounded card showing the slot's local time
   /// range (`HH:mm - HH:mm`, converted from the stored UTC instants) above the
   /// unit rate formatted to two decimal places in pence per kWh.
   Widget _buildTrackball(
     TrackballDetails details,
-    List<ForecastCharge> forecastCharges,
   ) {
     // The forecast is the second series, so a point from it is read off the
     // forecast list; everything else is a confirmed charge. Both expose the same
@@ -203,7 +223,7 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
     final double valueIncVat;
 
     if (details.seriesIndex == 1) {
-      final datum = forecastCharges[details.pointIndex!];
+      final datum = widget.forecastCharges[details.pointIndex!];
       validFrom = datum.validFrom;
       validTo = datum.validTo;
       valueIncVat = datum.valueIncVat;
@@ -275,49 +295,5 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
     }
 
     return colorStops.last.$1;
-  }
-
-  /// Builds the forecast series covering the last published price to seven days
-  /// ahead, or an empty series when there is nothing to forecast.
-  ///
-  /// The forecast continues from the latest confirmed `validTo`, so it picks up
-  /// exactly where the published prices end. A failure to reach NESO (or a
-  /// missing Grid Supply Point) yields an empty series rather than breaking the
-  /// confirmed chart.
-  Future<List<ForecastCharge>> _getForecastCharges(
-    ForecastService service,
-  ) async {
-    // The forecast begins where the published prices end: the latest validTo.
-    DateTime? from;
-    for (final charge in widget.historicalCharges) {
-      if (charge.validTo case final validTo?) {
-        if (from == null || validTo.isAfter(from)) {
-          from = validTo;
-        }
-      }
-    }
-    if (from == null) {
-      return const [];
-    }
-
-    final gsp = await _preferences.getString('grid_supply_point_group_id');
-    if (gsp == null) {
-      return const [];
-    }
-
-    final to = DateTime.now().toUtc().add(const Duration(days: 7));
-    if (!from.isBefore(to)) {
-      return const [];
-    }
-
-    try {
-      return await service.getForecastCharges(
-        gsp: gsp,
-        from: from,
-        to: to,
-      );
-    } catch (_) {
-      return const [];
-    }
   }
 }
