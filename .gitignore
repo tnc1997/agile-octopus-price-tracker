@@ -46,3 +46,7 @@ app.*.map.json
 
 # Script output data
 /script/data/
+
+# Python (virtual environment and caches for the training script)
+.venv/
+__pycache__/
