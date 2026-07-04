@@ -1,7 +1,7 @@
 import 'package:timezone/timezone.dart' as tz;
 
 import 'neso_api_client.dart';
-import 'seasonal_average_lookup_service.dart';
+import 'price_forecast_model_service.dart';
 
 /// A forecast Agile Octopus unit rate for a single half-hour slot.
 ///
@@ -11,7 +11,7 @@ import 'seasonal_average_lookup_service.dart';
 /// [valueIncVat] — so a forecast slot can be plotted on the same axes as a
 /// confirmed one without the chart needing to special-case the two types.
 ///
-/// [valueIncVat] comes from `SeasonalAverageLookupService.predict`, so it carries
+/// [valueIncVat] comes from `PriceForecastModelService.predict`, so it carries
 /// the same units as a confirmed charge: pence per kWh, inclusive of VAT.
 class ForecastCharge {
   /// Creates a forecast charge for a single half-hour slot.
@@ -40,7 +40,7 @@ class ForecastCharge {
 
   /// The forecast unit rate for the slot, in pence per kWh, inclusive of VAT.
   ///
-  /// Produced by [SeasonalAverageLookupService.predict] from the slot's
+  /// Produced by [PriceForecastModelService.predict] from the slot's
   /// conditions, so it carries the same units as a confirmed charge's
   /// `valueIncVat` and can be plotted on the same y-axis.
   final double valueIncVat;
@@ -51,34 +51,33 @@ class ForecastCharge {
 ///
 /// It bridges the two halves of the forecast: the live NESO generation forecasts
 /// (fetched through [NesoApiClient]) say how much wind and solar is expected for
-/// each future slot, and [SeasonalAverageLookupService] turns those conditions
+/// each future slot, and [PriceForecastModelService] turns those conditions
 /// into a plausible Agile unit rate. The result is a list of [ForecastCharge]s
 /// that plot on the same axes as the confirmed prices.
 class ForecastService {
   /// Creates a service from the two collaborators it draws on.
   ///
   /// [nesoApiClient] supplies the live wind and solar generation forecasts, and
-  /// [seasonalAverageLookupService] turns a slot's conditions into a plausible
+  /// [priceForecastModelService] turns a slot's conditions into a plausible
   /// price; [getForecastCharges] is where the two are combined. Both are held for
   /// the lifetime of the service, which keeps no other mutable state, so a single
-  /// instance can be shared (it is provided app-wide once the lookup table has
-  /// loaded).
+  /// instance can be shared (it is provided app-wide once the model has loaded).
   ForecastService({
     required NesoApiClient nesoApiClient,
-    required SeasonalAverageLookupService seasonalAverageLookupService,
+    required PriceForecastModelService priceForecastModelService,
   })  : _nesoApiClient = nesoApiClient,
-        _seasonalAverageLookupService = seasonalAverageLookupService;
+        _priceForecastModelService = priceForecastModelService;
 
   final NesoApiClient _nesoApiClient;
 
-  final SeasonalAverageLookupService _seasonalAverageLookupService;
+  final PriceForecastModelService _priceForecastModelService;
 
   final tz.Location _location = tz.getLocation('Europe/London');
 
   /// Forecasts the unit rate for every half-hour slot in `[from, to)`.
   ///
   /// [gsp] is the user's Grid Supply Point group identifier (e.g. `_C`), passed
-  /// straight through to [SeasonalAverageLookupService.predict]. [from] is the
+  /// straight through to [PriceForecastModelService.predict]. [from] is the
   /// instant the forecast should begin — typically the `validTo` of the last
   /// published price, so the series picks up exactly where the confirmed prices
   /// end — and [to] is the (exclusive) end of the window, typically seven days
@@ -141,7 +140,7 @@ class ForecastService {
               minutes: 30,
             ),
           ),
-          valueIncVat: _seasonalAverageLookupService.predict(
+          valueIncVat: _priceForecastModelService.predict(
             gsp: gsp,
             dateTime: validFrom,
             embeddedWindMw: forecast.embeddedWindForecastMw,
