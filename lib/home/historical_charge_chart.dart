@@ -304,19 +304,57 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
     double minimum,
     double maximum,
   ) {
+    // The gradient is defined by sampling [_calculateColor] at a fixed number
+    // of prices and letting Flutter interpolate between the samples. The math
+    // that lines each sample up with the price it represents:
+    //
+    // Flutter spaces a gradient's colors evenly when no explicit `stops` are
+    // given — with N colors, color i sits at fraction i / (N - 1) along the
+    // gradient, so color 0 is at fraction 0.0 and color N - 1 is at 1.0. With
+    // `begin: bottomCenter` and `end: topCenter` the gradient runs bottom to
+    // top, so fraction 0.0 is the plot area's bottom edge and 1.0 its top edge.
+    // Because the price axis is pinned to [minimum]..[maximum] (see the doc
+    // comment), those edges are the prices [minimum] and [maximum].
+    //
+    // A point at fraction t up the plot area therefore represents the price
+    //
+    //     price(t) = minimum + t * (maximum - minimum),
+    //
+    // a linear map from the unit interval [0, 1] onto [minimum, maximum]. To
+    // give sample i the right color we evaluate that map at the sample's own
+    // fraction, t = i / (N - 1):
+    //
+    //     price_i = minimum + (maximum - minimum) * i / (N - 1),
+    //
+    // which is the value handed to [_calculateColor] below. The endpoints fall
+    // exactly on the range: i = 0 yields [minimum] and i = N - 1 yields
+    // [maximum]. Dividing by N - 1 rather than N is what places the last sample
+    // on the top edge instead of one step short of it — there are N samples but
+    // only N - 1 gaps between them.
+    //
+    // Flutter interpolates linearly between adjacent samples. [_calculateColor]
+    // is itself piecewise-linear in price, so the only deviation is the tiny
+    // chord-versus-line gap where a color stop falls between two samples; at
+    // N = 64 across a realistic price range each gap spans well under a pixel,
+    // so it is not visible.
     const samples = 64;
+
+    final colors = <Color>[];
+
+    for (var i = 0; i < samples; i++) {
+      final value = minimum + (maximum - minimum) * i / (samples - 1);
+
+      if (_calculateColor(colorStops, value) case final color?) {
+        colors.add(color);
+      } else {
+        colors.add(Colors.transparent);
+      }
+    }
 
     return LinearGradient(
       begin: Alignment.bottomCenter,
       end: Alignment.topCenter,
-      colors: [
-        for (var i = 0; i < samples; i++)
-          (_calculateColor(
-                colorStops,
-                minimum + (maximum - minimum) * i / (samples - 1),
-              ) ??
-              Colors.transparent),
-      ],
+      colors: colors,
     );
   }
 
