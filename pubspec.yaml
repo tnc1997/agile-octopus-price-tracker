@@ -40,6 +40,7 @@ dependencies:
   intl: ^0.20.0
   nominatim_api_client: ^0.3.0
   octopus_energy_api_client: ^1.0.0
+  onnxruntime: ^1.0.0
   provider: ^6.0.0
   shared_preferences: ^2.0.0
   syncfusion_flutter_charts: ^29.0.0
@@ -66,8 +67,14 @@ flutter:
   # The seasonal average price lookup table built by
   # script/build_seasonal_average_lookup.py, which writes its output here.
   # Regenerating the table refreshes the bundled asset in place.
+  #
+  # The price-forecast model exported by
+  # script/export_price_forecast_model.py, which writes its output here.
+  # Regenerating the model refreshes the bundled asset in place; it is loaded
+  # at start-up by PriceForecastModelService.
   assets:
     - assets/seasonal_average_lookup.json
+    - assets/price_forecast_model.onnx
 
   # To add assets to your application, add an assets section, like this:
   # assets:
