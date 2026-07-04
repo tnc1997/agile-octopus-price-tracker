@@ -14,21 +14,21 @@ import 'package:timezone/timezone.dart' as tz;
 ///
 /// That keeps these tests about the service's own job — fetching, joining,
 /// windowing, instant math and ordering — rather than model inference. It is a
-/// fake rather than a real model because the onnxruntime native library the real
-/// service loads is unavailable under `flutter test`, and inference parity is
-/// verified by `script/export_price_forecast_model.py` in any case. Implemented
-/// via `implements` so no session is constructed; only [predict] is exercised,
-/// and the unused members fall through to [noSuchMethod].
+/// fake rather than a real model because the ONNX Runtime native library the
+/// real service loads is unavailable under `flutter test`, and inference parity
+/// is verified by `script/export_price_forecast_model.py` in any case.
+/// Implemented via `implements` so no session is constructed; only [predict] is
+/// exercised, and the unused members fall through to [noSuchMethod].
 class _FakePriceForecastModelService extends Fake
     implements PriceForecastModelService {
   @override
-  double predict({
+  Future<double> predict({
     required String gsp,
     required DateTime dateTime,
     required double embeddedWindMw,
     required double embeddedSolarMw,
     required double windMw,
-  }) {
+  }) async {
     return 7.0;
   }
 }

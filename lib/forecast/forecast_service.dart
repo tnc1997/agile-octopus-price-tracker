@@ -132,6 +132,14 @@ class ForecastService {
         continue;
       }
 
+      final valueIncVat = await _priceForecastModelService.predict(
+        gsp: gsp,
+        dateTime: validFrom,
+        embeddedWindMw: forecast.embeddedWindForecastMw,
+        embeddedSolarMw: forecast.embeddedSolarForecastMw,
+        windMw: windForecast.windForecastMw,
+      );
+
       charges.add(
         ForecastCharge(
           validFrom: validFrom,
@@ -140,13 +148,7 @@ class ForecastService {
               minutes: 30,
             ),
           ),
-          valueIncVat: _priceForecastModelService.predict(
-            gsp: gsp,
-            dateTime: validFrom,
-            embeddedWindMw: forecast.embeddedWindForecastMw,
-            embeddedSolarMw: forecast.embeddedSolarForecastMw,
-            windMw: windForecast.windForecastMw,
-          ),
+          valueIncVat: valueIncVat,
         ),
       );
     }
