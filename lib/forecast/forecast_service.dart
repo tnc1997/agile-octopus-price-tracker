@@ -120,10 +120,10 @@ class ForecastService {
         continue;
       }
 
-      // Reconstruct the slot's wall-clock start in Europe/London from its
-      // settlement date and period — period 1 begins at local midnight and each
-      // step is half an hour — then keep only slots inside the window. Comparing
-      // instants, so the UTC/local flag of the bounds does not matter.
+      // Reconstruct the slot's start from its settlement date and period —
+      // period 1 begins at local midnight and each step is half an hour — as a
+      // UTC instant, then keep only slots inside the window. Comparing instants,
+      // so the UTC/local flag of the bounds does not matter.
       final validFrom = _calculateValidFrom(
         forecast.settlementDate,
         forecast.settlementPeriod,
@@ -135,8 +135,12 @@ class ForecastService {
 
       charges.add(
         ForecastCharge(
-          validFrom: validFrom.toUtc(),
-          validTo: validFrom.add(const Duration(minutes: 30)).toUtc(),
+          validFrom: validFrom,
+          validTo: validFrom.add(
+            const Duration(
+              minutes: 30,
+            ),
+          ),
           valueIncVat: _seasonalAverageLookupService.predict(
             gsp: gsp,
             dateTime: validFrom,
@@ -155,23 +159,42 @@ class ForecastService {
     return charges;
   }
 
-  /// The Europe/London instant a settlement slot begins.
+  /// The UTC instant a settlement slot begins.
   ///
   /// Period 1 starts at local midnight on [settlementDate] and each successive
   /// period is 30 minutes later, mirroring how the build script maps a timestamp
-  /// back to a period. Returned as a [tz.TZDateTime] so it carries the correct
-  /// UTC instant across British Summer Time.
-  tz.TZDateTime _calculateValidFrom(
+  /// back to a period. The slot is resolved in Europe/London so British Summer
+  /// Time is handled correctly, then returned as a plain UTC [DateTime] carrying
+  /// that instant.
+  ///
+  /// It is deliberately not left as the [tz.TZDateTime] the resolution produces:
+  /// [tz.TZDateTime.toUtc] would only yield another [tz.TZDateTime], whose
+  /// [DateTime.toLocal] resolves against the timezone package's `tz.local` (which
+  /// defaults to UTC and the app never sets) rather than the device's system
+  /// zone. A confirmed `HistoricalCharge.validFrom` is a plain [DateTime] whose
+  /// `toLocal()` does use the device zone, so returning a plain [DateTime] here
+  /// keeps a forecast slot displaying in the same zone — otherwise it renders an
+  /// hour off (in UTC) and overlaps the confirmed prices on non-UTC devices.
+  DateTime _calculateValidFrom(
     String settlementDate,
     int settlementPeriod,
   ) {
     final parts = settlementDate.split('-');
 
-    return tz.TZDateTime(
+    final local = tz.TZDateTime(
       _location,
       int.parse(parts[0]),
       int.parse(parts[1]),
       int.parse(parts[2]),
-    ).add(Duration(minutes: (settlementPeriod - 1) * 30));
+    ).add(
+      Duration(
+        minutes: (settlementPeriod - 1) * 30,
+      ),
+    );
+
+    // `native` is the tz.TZDateTime's canonical UTC representation as a plain
+    // DateTime — the same instant, minus the tz type — so toLocal() on the
+    // stored ForecastCharge resolves against the device's system zone.
+    return local.native;
   }
 }
