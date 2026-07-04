@@ -69,26 +69,37 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
             ],
           ];
 
-          final minimum = bounds.minOrNull;
-          final maximum = bounds.maxOrNull;
+          final xMinimum = bounds.minOrNull;
+          final xMaximum = bounds.maxOrNull;
 
-          // Open on a day-ahead window from the first slot — the current and
-          // upcoming confirmed prices plus the start of the forecast — rather
-          // than the whole week at once. Anchoring on the first slot start keeps
-          // the current slot flush to the left edge; users can pan or zoom out to
-          // the derived extent.
-          final initialVisibleMaximum = minimum?.add(
-            const Duration(
-              days: 1,
-            ),
-          );
+          // Fix the price axis to the data extent so the gradient can map price
+          // to a pixel position: the shader spans the plot area, and pinning the
+          // axis makes its bottom edge [yMinimum] and top edge [yMaximum].
+          final values = <double>[
+            for (final historicalCharge in widget.historicalCharges)
+              historicalCharge.valueIncVat,
+            for (final forecastCharge in widget.forecastCharges)
+              forecastCharge.valueIncVat,
+          ];
+
+          final yMinimum = values.minOrNull?.floorToDouble() ?? 0;
+          final yMaximum = values.maxOrNull?.ceilToDouble() ?? 0;
 
           return SfCartesianChart(
             primaryXAxis: DateTimeAxis(
-              minimum: minimum,
-              maximum: maximum,
-              initialVisibleMinimum: minimum,
-              initialVisibleMaximum: initialVisibleMaximum,
+              minimum: xMinimum,
+              maximum: xMaximum,
+              initialVisibleMinimum: xMinimum,
+              // Open on a day-ahead window from the first slot — the current
+              // and upcoming confirmed prices plus the start of the forecast —
+              // rather than the whole week at once. Anchoring on the first
+              // slot start keeps the current slot flush to the left edge;
+              // users can pan or zoom out to the derived extent.
+              initialVisibleMaximum: xMinimum?.add(
+                const Duration(
+                  days: 1,
+                ),
+              ),
               axisLabelFormatter: (details) {
                 final date = DateTime.fromMillisecondsSinceEpoch(
                   details.value.toInt(),
@@ -105,6 +116,8 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                 text: 'Price (p/kWh)',
               ),
               numberFormat: NumberFormat('0.00'),
+              minimum: yMinimum,
+              maximum: yMaximum,
               plotBands: [
                 PlotBand(
                   start: 0,
@@ -139,8 +152,16 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                 sortFieldValueMapper: (datum, index) {
                   return datum.validFrom!.toLocal();
                 },
-                pointColorMapper: (datum, index) {
-                  return _calculateColor(datum.valueIncVat, colorStops);
+                // Color the whole line by price with a vertical gradient rather
+                // than per-point, so the vertical riser between two slots is
+                // painted the color of the price it moves through instead of
+                // inheriting the previous slot's color (see issue #32).
+                onCreateShader: (details) {
+                  return _buildGradient(
+                    colorStops,
+                    yMinimum,
+                    yMaximum,
+                  ).createShader(details.rect);
                 },
               ),
               if (widget.forecastCharges.isNotEmpty)
@@ -159,8 +180,16 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                   sortFieldValueMapper: (datum, index) {
                     return datum.validFrom.toLocal();
                   },
-                  pointColorMapper: (datum, index) {
-                    return _calculateColor(datum.valueIncVat, colorStops);
+                  // Color the whole line by price with a vertical gradient rather
+                  // than per-point, so the vertical riser between two slots is
+                  // painted the color of the price it moves through instead of
+                  // inheriting the previous slot's color (see issue #32).
+                  onCreateShader: (details) {
+                    return _buildGradient(
+                      colorStops,
+                      yMinimum,
+                      yMaximum,
+                    ).createShader(details.rect);
                   },
                 ),
             ],
@@ -258,17 +287,50 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
     );
   }
 
+  /// Builds the vertical gradient used to color a series by price.
+  ///
+  /// The series' `onCreateShader` paints every segment — including the vertical
+  /// riser between two slots — with this shader stretched across the whole plot
+  /// area, so each pixel is colored by its position rather than by the color of
+  /// the point that owns the segment (which left risers overflowing their band;
+  /// see issue #32). Because the price axis is pinned to [minimum]..[maximum]
+  /// with no range padding, a pixel's vertical position is its price: the bottom
+  /// edge is [minimum] and the top edge is [maximum].
+  ///
+  /// The colors are sampled from [_calculateColor] evenly across that range so
+  /// the gradient tracks the configured color stops.
+  LinearGradient _buildGradient(
+    List<(Color, double)> colorStops,
+    double minimum,
+    double maximum,
+  ) {
+    const samples = 64;
+
+    return LinearGradient(
+      begin: Alignment.bottomCenter,
+      end: Alignment.topCenter,
+      colors: [
+        for (var i = 0; i < samples; i++)
+          (_calculateColor(
+                colorStops,
+                minimum + (maximum - minimum) * i / (samples - 1),
+              ) ??
+              Colors.transparent),
+      ],
+    );
+  }
+
   /// Maps a unit rate to its color by interpolating between the configured
   /// color stops, so a confirmed charge and a forecast charge of the same price
   /// are shown in the same color.
   Color? _calculateColor(
-    double value,
     List<(Color, double)> colorStops,
+    double value,
   ) {
     if (value < 0) {
-      for (final stop in colorStops) {
-        if (stop.$2 < 0) {
-          return stop.$1;
+      for (final colorStop in colorStops) {
+        if (colorStop.$2 < 0) {
+          return colorStop.$1;
         }
       }
 
