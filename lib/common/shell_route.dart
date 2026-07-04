@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../home/home_route.dart';
-import '../settings/settings_route.dart';
+import '../home/home_screen.dart';
+import '../settings/settings_screen.dart';
 import 'shell_screen.dart';
 
 part 'shell_route.g.dart';
@@ -29,5 +29,29 @@ class ShellRoute extends ShellRouteData {
     return ShellScreen(
       child: navigator,
     );
+  }
+}
+
+class HomeRoute extends GoRouteData with $HomeRoute {
+  const HomeRoute();
+
+  @override
+  Widget build(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return const HomeScreen();
+  }
+}
+
+class SettingsRoute extends GoRouteData with $SettingsRoute {
+  const SettingsRoute();
+
+  @override
+  Widget build(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return const SettingsScreen();
   }
 }

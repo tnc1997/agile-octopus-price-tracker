@@ -8,7 +8,7 @@ part 'welcome_route.g.dart';
 @TypedGoRoute<WelcomeRoute>(
   path: '/welcome',
 )
-class WelcomeRoute extends GoRouteData {
+class WelcomeRoute extends GoRouteData with $WelcomeRoute {
   const WelcomeRoute();
 
   @override

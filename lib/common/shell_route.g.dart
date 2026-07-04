@@ -15,11 +15,11 @@ RouteBase get $shellRoute => ShellRouteData.$route(
       routes: [
         GoRouteData.$route(
           path: '/',
-          factory: $HomeRouteExtension._fromState,
+          factory: $HomeRoute._fromState,
         ),
         GoRouteData.$route(
           path: '/settings',
-          factory: $SettingsRouteExtension._fromState,
+          factory: $SettingsRoute._fromState,
         ),
       ],
     );
@@ -28,36 +28,46 @@ extension $ShellRouteExtension on ShellRoute {
   static ShellRoute _fromState(GoRouterState state) => const ShellRoute();
 }
 
-extension $HomeRouteExtension on HomeRoute {
+mixin $HomeRoute on GoRouteData {
   static HomeRoute _fromState(GoRouterState state) => const HomeRoute();
 
+  @override
   String get location => GoRouteData.$location(
         '/',
       );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
 
-extension $SettingsRouteExtension on SettingsRoute {
+mixin $SettingsRoute on GoRouteData {
   static SettingsRoute _fromState(GoRouterState state) => const SettingsRoute();
 
+  @override
   String get location => GoRouteData.$location(
         '/settings',
       );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }

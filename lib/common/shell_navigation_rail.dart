@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../home/home_route.dart';
-import '../settings/settings_route.dart';
 import 'shell_route.dart';
 
 class ShellNavigationRail extends StatelessWidget {

@@ -12,22 +12,27 @@ List<RouteBase> get $appRoutes => [
 
 RouteBase get $welcomeRoute => GoRouteData.$route(
       path: '/welcome',
-      factory: $WelcomeRouteExtension._fromState,
+      factory: $WelcomeRoute._fromState,
     );
 
-extension $WelcomeRouteExtension on WelcomeRoute {
+mixin $WelcomeRoute on GoRouteData {
   static WelcomeRoute _fromState(GoRouterState state) => const WelcomeRoute();
 
+  @override
   String get location => GoRouteData.$location(
         '/welcome',
       );
 
+  @override
   void go(BuildContext context) => context.go(location);
 
+  @override
   Future<T?> push<T>(BuildContext context) => context.push<T>(location);
 
+  @override
   void pushReplacement(BuildContext context) =>
       context.pushReplacement(location);
 
+  @override
   void replace(BuildContext context) => context.replace(location);
 }
