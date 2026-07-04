@@ -9,6 +9,7 @@ import 'package:timezone/data/latest.dart';
 import 'common/shell_route.dart';
 import 'forecast/forecast_service.dart';
 import 'forecast/neso_api_client.dart';
+import 'forecast/price_forecast_model_service.dart';
 import 'forecast/seasonal_average_lookup_service.dart';
 import 'welcome/welcome_route.dart';
 
@@ -47,6 +48,17 @@ void main() {
         FutureProvider(
           create: (context) {
             return SeasonalAverageLookupService.load();
+          },
+          initialData: null,
+          lazy: false,
+        ),
+        // Begin loading the price-forecast model at start-up (lazy: false) so
+        // its inference session is ready by the time the forecast needs it. The
+        // value is null until the load completes, so consumers read
+        // PriceForecastModelService? and handle the loading state.
+        FutureProvider(
+          create: (context) {
+            return PriceForecastModelService.load();
           },
           initialData: null,
           lazy: false,
