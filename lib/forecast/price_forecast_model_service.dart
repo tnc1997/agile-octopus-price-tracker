@@ -1,6 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
-import 'package:onnxruntime/onnxruntime.dart';
+import 'package:flutter_onnxruntime/flutter_onnxruntime.dart';
 import 'package:timezone/timezone.dart' as tz;
 
 /// Loads the bundled price-forecast model and holds the ready-to-run inference
@@ -15,19 +14,19 @@ import 'package:timezone/timezone.dart' as tz;
 /// forecast the same quantity by bucketing historical prices and returning a
 /// bucket average.
 ///
-/// This service owns the lifecycle of the [OrtSession]: [load] reads the asset,
-/// initialises the ONNX Runtime environment and builds the session; [release]
-/// tears both down. It is loaded once at start-up (see `main.dart`) and the
-/// resulting instance is shared for the application's lifetime rather than a
-/// session being rebuilt per forecast — building one parses and prepares the
-/// whole tree ensemble, which is paid once here.
+/// This service owns the lifecycle of the [OrtSession]: [load] builds the
+/// session from the bundled asset; [close] tears it down. It is loaded once at
+/// start-up (see `main.dart`) and the resulting instance is shared for the
+/// application's lifetime rather than a session being rebuilt per forecast —
+/// building one parses and prepares the whole tree ensemble, which is paid once
+/// here.
 class PriceForecastModelService {
   /// Creates a service around an already-built inference [session].
   ///
   /// Private so that instances can only be obtained through [load], which is
-  /// responsible for reading the asset, initialising the ONNX Runtime
-  /// environment and constructing the session. This synchronous constructor
-  /// exists only to hold the finished session once that work is done.
+  /// responsible for constructing the session from the bundled asset. This
+  /// synchronous constructor exists only to hold the finished session once that
+  /// work is done.
   PriceForecastModelService._({
     required OrtSession session,
   }) : _session = session;
@@ -92,7 +91,7 @@ class PriceForecastModelService {
   ///
   /// Held for the service's lifetime so inference reuses the one prepared
   /// ensemble rather than rebuilding it per call. Kept private: the session's
-  /// lifecycle (creation in [load], teardown in [release]) is owned here, and
+  /// lifecycle (creation in [load], teardown in [close]) is owned here, and
   /// its input/output tensor names are surfaced through [inputNames] and
   /// [outputNames].
   final OrtSession _session;
@@ -120,42 +119,27 @@ class PriceForecastModelService {
 
   /// Loads the bundled model and returns a ready-to-run service.
   ///
-  /// Initialises the ONNX Runtime environment, reads the [_assetKey] asset as
-  /// raw bytes and builds an [OrtSession] from them. This work is paid once
-  /// here; call this during start-up and reuse the returned instance rather than
-  /// rebuilding a session per forecast, and call [release] when it is no longer
-  /// needed.
-  ///
-  /// Pass [bundle] to load from a specific [AssetBundle] (e.g. a test bundle);
-  /// it defaults to [rootBundle], the application's bundled assets.
+  /// Builds an [OrtSession] from the [_assetKey] asset; the runtime reads the
+  /// asset itself. This work is paid once here; call this during start-up and
+  /// reuse the returned instance rather than rebuilding a session per forecast,
+  /// and call [close] when it is no longer needed.
   ///
   /// Completes with an error if the asset is missing or is not a valid ONNX
   /// model the runtime can load.
-  static Future<PriceForecastModelService> load({
-    AssetBundle? bundle,
-  }) async {
-    // Default to the root bundle if none is provided.
-    bundle ??= rootBundle;
-
-    // Bring up the ONNX Runtime environment before creating any session. This
-    // is idempotent, so loading more than once (e.g. across a hot restart) is
-    // harmless.
-    OrtEnv.instance.init();
-
-    // Read the bundled model as raw bytes. Slice by the ByteData's own offset
-    // and length so the view covers exactly the asset's bytes regardless of how
-    // it is backed.
-    final data = await bundle.load(_assetKey);
-    final bytes = data.buffer.asUint8List(
-      data.offsetInBytes,
-      data.lengthInBytes,
-    );
-
-    // Build the inference session from the model bytes. Constructing it parses
+  static Future<PriceForecastModelService> load() async {
+    // Build the inference session from the bundled asset. Constructing it parses
     // and prepares the whole tree ensemble, which is why it is done once here.
-    final session = OrtSession.fromBuffer(bytes, OrtSessionOptions());
+    final session = await OnnxRuntime().createSessionFromAsset(_assetKey);
 
     return PriceForecastModelService._(session: session);
+  }
+
+  /// Releases the inference session.
+  ///
+  /// Frees the native resources [load] acquired. Call this when the service is
+  /// no longer needed; the instance must not be used afterwards.
+  Future<void> close() async {
+    await _session.close();
   }
 
   /// Forecasts the unit rate (in pence per kWh, inclusive of VAT) for a
@@ -179,13 +163,13 @@ class PriceForecastModelService {
   /// tensor; the one prediction is read back off the `[1, 1]` output.
   ///
   /// Throws an [ArgumentError] if [gsp] is not a recognised region.
-  double predict({
+  Future<double> predict({
     required String gsp,
     required DateTime dateTime,
     required double embeddedWindMw,
     required double embeddedSolarMw,
     required double windMw,
-  }) {
+  }) async {
     // Assemble the feature vector in the model's declared order, then present it
     // as a [1, featureCount] float tensor — one slot, batch size one. The model
     // takes float32 input, so back the tensor with a Float32List (a plain
@@ -198,34 +182,33 @@ class PriceForecastModelService {
       windMw: windMw,
     );
 
-    final input = OrtValueTensor.createTensorWithDataList(
+    final input = await OrtValue.fromList(
       Float32List.fromList(features),
       [1, features.length],
     );
 
-    final runOptions = OrtRunOptions();
+    Map<String, OrtValue>? outputs;
 
-    List<OrtValue?>? outputs;
     try {
       // Key the input map off the model's own tensor name rather than a
       // hard-coded string, and read the single output tensor back by name too.
-      outputs = _session.run(
-        runOptions,
-        {inputNames.first: input},
-        outputNames,
-      );
+      outputs = await _session.run({inputNames.first: input});
 
-      // The regressor emits one [1, 1] tensor; its value is that shape as a
-      // nested list, so the single prediction is the first element of the first
-      // row.
-      final output = outputs.first!.value as List;
-      return (output.first as List).first as double;
+      // The regressor emits one [1, 1] tensor, so its single prediction is the
+      // sole element once flattened.
+      final output = await outputs[outputNames.first]!.asFlattenedList();
+
+      return output.first as double;
     } finally {
-      // Release the native tensors and run options however the run turns out, so
-      // a forecast of hundreds of slots does not leak per call.
-      input.release();
-      runOptions.release();
-      outputs?.forEach((output) => output?.release());
+      // Release the native tensors however the run turns out, so a forecast of
+      // hundreds of slots does not leak per call.
+      await input.dispose();
+
+      if (outputs != null) {
+        for (final output in outputs.values) {
+          await output.dispose();
+        }
+      }
     }
   }
 
@@ -279,14 +262,5 @@ class PriceForecastModelService {
       embeddedSolarMw,
       windMw,
     ];
-  }
-
-  /// Releases the inference session and the ONNX Runtime environment.
-  ///
-  /// Frees the native resources [load] acquired. Call this when the service is
-  /// no longer needed; the instance must not be used afterwards.
-  void release() {
-    _session.release();
-    OrtEnv.instance.release();
   }
 }
