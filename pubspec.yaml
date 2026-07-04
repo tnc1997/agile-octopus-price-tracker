@@ -64,16 +64,11 @@ flutter:
   # the material Icons class.
   uses-material-design: true
 
-  # The seasonal average price lookup table built by
-  # script/build_seasonal_average_lookup.py, which writes its output here.
-  # Regenerating the table refreshes the bundled asset in place.
-  #
   # The price-forecast model exported by
   # script/export_price_forecast_model.py, which writes its output here.
   # Regenerating the model refreshes the bundled asset in place; it is loaded
   # at start-up by PriceForecastModelService.
   assets:
-    - assets/seasonal_average_lookup.json
     - assets/price_forecast_model.onnx
 
   # To add assets to your application, add an assets section, like this:

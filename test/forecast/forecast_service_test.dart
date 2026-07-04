@@ -2,29 +2,36 @@ import 'dart:convert';
 
 import 'package:agile_octopus_price_tracker/forecast/forecast_service.dart';
 import 'package:agile_octopus_price_tracker/forecast/neso_api_client.dart';
-import 'package:agile_octopus_price_tracker/forecast/seasonal_average_lookup_service.dart';
+import 'package:agile_octopus_price_tracker/forecast/price_forecast_model_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:timezone/data/latest.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-/// A lookup table whose `C` region carries only an inline average, so every
-/// query falls back to it and [SeasonalAverageLookupService.predict] returns a
-/// constant 7.0. That keeps these tests about the service's own job — fetching,
-/// joining, windowing, instant math and ordering — rather than the table walk,
-/// which its own tests already cover.
-const _lookup = <String, dynamic>{
-  'generation_thresholds_mw': {
-    'low': 0.0,
-  },
-  'lookup': {
-    'C': {
-      'average_value_inc_vat': 7.0,
-      'count': 100,
-    },
-  },
-};
+/// A [PriceForecastModelService] test double whose [predict] returns a constant
+/// 7.0 for every slot.
+///
+/// That keeps these tests about the service's own job — fetching, joining,
+/// windowing, instant math and ordering — rather than model inference. It is a
+/// fake rather than a real model because the onnxruntime native library the real
+/// service loads is unavailable under `flutter test`, and inference parity is
+/// verified by `script/export_price_forecast_model.py` in any case. Implemented
+/// via `implements` so no session is constructed; only [predict] is exercised,
+/// and the unused members fall through to [noSuchMethod].
+class _FakePriceForecastModelService extends Fake
+    implements PriceForecastModelService {
+  @override
+  double predict({
+    required String gsp,
+    required DateTime dateTime,
+    required double embeddedWindMw,
+    required double embeddedSolarMw,
+    required double windMw,
+  }) {
+    return 7.0;
+  }
+}
 
 /// A [NesoApiClient] backed by a [MockClient] that returns [embedded] for the
 /// embedded resource and [wind] for the wind resource, branching on the
@@ -81,14 +88,13 @@ void main() {
   group(
     'ForecastService',
     () {
-      late final SeasonalAverageLookupService seasonalAverageLookupService;
+      late final PriceForecastModelService priceForecastModelService;
 
       setUpAll(
         () {
           initializeTimeZones();
 
-          seasonalAverageLookupService =
-              SeasonalAverageLookupService.fromJson(_lookup);
+          priceForecastModelService = _FakePriceForecastModelService();
         },
       );
 
@@ -115,7 +121,7 @@ void main() {
                 _wind('2026-07-01', 5),
               ],
             ),
-            seasonalAverageLookupService: seasonalAverageLookupService,
+            priceForecastModelService: priceForecastModelService,
           );
 
           final charges = await forecastService.getForecastCharges(
@@ -151,7 +157,7 @@ void main() {
             DateTime.utc(2026, 7, 1, 0, 0),
           );
 
-          // The flat table resolves every slot to its inline average.
+          // The fake forecaster resolves every slot to a constant.
           expect(
             charges.map((charge) => charge.valueIncVat),
             everyElement(7.0),
@@ -185,7 +191,7 @@ void main() {
                 _wind('2026-01-01', 5),
               ],
             ),
-            seasonalAverageLookupService: seasonalAverageLookupService,
+            priceForecastModelService: priceForecastModelService,
           );
 
           final charges = await forecastService.getForecastCharges(
@@ -221,7 +227,7 @@ void main() {
             DateTime.utc(2026, 1, 1, 1, 0),
           );
 
-          // The flat table resolves every slot to its inline average.
+          // The fake forecaster resolves every slot to a constant.
           expect(
             charges.map((charge) => charge.valueIncVat),
             everyElement(7.0),
@@ -241,7 +247,7 @@ void main() {
                 _wind('2026-07-01', 1),
               ],
             ),
-            seasonalAverageLookupService: seasonalAverageLookupService,
+            priceForecastModelService: priceForecastModelService,
           );
 
           final charges = await forecastService.getForecastCharges(
@@ -273,7 +279,7 @@ void main() {
                 _wind('2026-07-01', 3),
               ],
             ),
-            seasonalAverageLookupService: seasonalAverageLookupService,
+            priceForecastModelService: priceForecastModelService,
           );
 
           final charges = await forecastService.getForecastCharges(
@@ -307,7 +313,7 @@ void main() {
                 _wind('2026-07-01', 1),
               ],
             ),
-            seasonalAverageLookupService: seasonalAverageLookupService,
+            priceForecastModelService: priceForecastModelService,
           );
 
           final charges = await forecastService.getForecastCharges(
@@ -352,7 +358,7 @@ void main() {
                 _wind('2026-01-01', 1),
               ],
             ),
-            seasonalAverageLookupService: seasonalAverageLookupService,
+            priceForecastModelService: priceForecastModelService,
           );
 
           final charges = await forecastService.getForecastCharges(

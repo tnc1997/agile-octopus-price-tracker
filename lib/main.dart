@@ -10,7 +10,6 @@ import 'common/shell_route.dart';
 import 'forecast/forecast_service.dart';
 import 'forecast/neso_api_client.dart';
 import 'forecast/price_forecast_model_service.dart';
-import 'forecast/seasonal_average_lookup_service.dart';
 import 'welcome/welcome_route.dart';
 
 void main() {
@@ -41,17 +40,6 @@ void main() {
             return SharedPreferencesAsync();
           },
         ),
-        // Begin loading the seasonal average lookup table at start-up (lazy:
-        // false) so it is ready by the time the forecast needs it. The
-        // value is null until the load completes, so consumers read
-        // SeasonalAverageLookupService? and handle the loading state.
-        FutureProvider(
-          create: (context) {
-            return SeasonalAverageLookupService.load();
-          },
-          initialData: null,
-          lazy: false,
-        ),
         // Begin loading the price-forecast model at start-up (lazy: false) so
         // its inference session is ready by the time the forecast needs it. The
         // value is null until the load completes, so consumers read
@@ -63,20 +51,20 @@ void main() {
           initialData: null,
           lazy: false,
         ),
-        // Compose the forecast service from the NESO client and the lookup
-        // table. The latter is null until its start-up load completes, so the
-        // service is itself null until then; consumers read ForecastService?
-        // and hold off forecasting until it is ready.
-        ProxyProvider2<NesoApiClient, SeasonalAverageLookupService?,
+        // Compose the forecast service from the NESO client and the price
+        // forecast model. The latter is null until its start-up load completes,
+        // so the service is itself null until then; consumers read
+        // ForecastService? and hold off forecasting until it is ready.
+        ProxyProvider2<NesoApiClient, PriceForecastModelService?,
             ForecastService?>(
-          update: (context, nesoApiClient, seasonalAverageLookupService, _) {
-            if (seasonalAverageLookupService == null) {
+          update: (context, nesoApiClient, priceForecastModelService, _) {
+            if (priceForecastModelService == null) {
               return null;
             }
 
             return ForecastService(
               nesoApiClient: nesoApiClient,
-              seasonalAverageLookupService: seasonalAverageLookupService,
+              priceForecastModelService: priceForecastModelService,
             );
           },
         ),
