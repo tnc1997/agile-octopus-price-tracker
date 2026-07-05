@@ -1,0 +1,146 @@
+import 'dart:convert';
+
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'extensions.dart';
+
+/// Builds the vertical gradient used to color a price series by value.
+///
+/// A series' `onCreateShader` paints every segment — including the vertical
+/// riser between two slots — with this shader stretched across the whole plot
+/// area, so each pixel is colored by its position rather than by the color of
+/// the point that owns the segment (which left risers overflowing their band;
+/// see issue #32). Because the price axis is pinned to [minimum]..[maximum]
+/// with no range padding, a pixel's vertical position is its price: the bottom
+/// edge is [minimum] and the top edge is [maximum].
+///
+/// The colors are sampled from [calculatePriceColor] evenly across that range
+/// so the gradient tracks the configured color stops.
+LinearGradient buildPriceGradient(
+  List<(Color, double)> colorStops,
+  double minimum,
+  double maximum,
+) {
+  // The gradient is defined by sampling [calculatePriceColor] at a fixed number
+  // of prices and letting Flutter interpolate between the samples. The math
+  // that lines each sample up with the price it represents:
+  //
+  // Flutter spaces a gradient's colors evenly when no explicit `stops` are
+  // given — with N colors, color i sits at fraction i / (N - 1) along the
+  // gradient, so color 0 is at fraction 0.0 and color N - 1 is at 1.0. With
+  // `begin: bottomCenter` and `end: topCenter` the gradient runs bottom to
+  // top, so fraction 0.0 is the plot area's bottom edge and 1.0 its top edge.
+  // Because the price axis is pinned to [minimum]..[maximum] (see the doc
+  // comment), those edges are the prices [minimum] and [maximum].
+  //
+  // A point at fraction t up the plot area therefore represents the price
+  //
+  //     price(t) = minimum + t * (maximum - minimum),
+  //
+  // a linear map from the unit interval [0, 1] onto [minimum, maximum]. To
+  // give sample i the right color we evaluate that map at the sample's own
+  // fraction, t = i / (N - 1):
+  //
+  //     price_i = minimum + (maximum - minimum) * i / (N - 1),
+  //
+  // which is the value handed to [calculatePriceColor] below. The endpoints
+  // fall exactly on the range: i = 0 yields [minimum] and i = N - 1 yields
+  // [maximum]. Dividing by N - 1 rather than N is what places the last sample
+  // on the top edge instead of one step short of it — there are N samples but
+  // only N - 1 gaps between them.
+  //
+  // Flutter interpolates linearly between adjacent samples. [calculatePriceColor]
+  // is itself piecewise-linear in price, so the only deviation is the tiny
+  // chord-versus-line gap where a color stop falls between two samples; at
+  // N = 64 across a realistic price range each gap spans well under a pixel,
+  // so it is not visible.
+  const samples = 64;
+
+  final colors = <Color>[];
+
+  for (var i = 0; i < samples; i++) {
+    final value = minimum + (maximum - minimum) * i / (samples - 1);
+
+    if (calculatePriceColor(colorStops, value) case final color?) {
+      colors.add(color);
+    } else {
+      colors.add(Colors.transparent);
+    }
+  }
+
+  return LinearGradient(
+    begin: Alignment.bottomCenter,
+    end: Alignment.topCenter,
+    colors: colors,
+  );
+}
+
+/// Maps a unit rate to its color by interpolating between the configured
+/// [colorStops], so a confirmed charge and a forecast charge of the same price
+/// are shown in the same color.
+Color? calculatePriceColor(
+  List<(Color, double)> colorStops,
+  double value,
+) {
+  if (value < 0) {
+    for (final colorStop in colorStops) {
+      if (colorStop.$2 < 0) {
+        return colorStop.$1;
+      }
+    }
+
+    return Color(0xff00ffff);
+  }
+
+  for (var i = 0; i < colorStops.length - 1; i++) {
+    if (value < colorStops[i].$2) {
+      return colorStops[i].$1;
+    }
+
+    if (value < colorStops[i + 1].$2) {
+      return Color.lerp(
+        colorStops[i].$1,
+        colorStops[i + 1].$1,
+        value.remap(
+          colorStops[i].$2,
+          colorStops[i + 1].$2,
+          0,
+          1,
+        ),
+      );
+    }
+  }
+
+  return colorStops.last.$1;
+}
+
+/// Gets the color gradient stops used to color a price by its unit rate.
+///
+/// Reads the persisted `color_stops` preference, falling back to a built-in
+/// default when the user has not configured any. Each entry pairs a color with
+/// the price (in pence per kWh) it applies at, ordered ascending by price;
+/// [calculatePriceColor] interpolates between adjacent stops.
+Future<List<(Color, double)>> getColorStops(
+  SharedPreferencesAsync preferences,
+) async {
+  if (await preferences.getString('color_stops') case final source?) {
+    final colorStops = <(Color, double)>[];
+
+    for (final value in json.decode(source) as List<dynamic>) {
+      colorStops.add((
+        Color(value['color'] as int),
+        value['price'] as double,
+      ));
+    }
+
+    return colorStops;
+  }
+
+  return const [
+    (Color(0xff2196f3), -1.00),
+    (Color(0xff00ff00), 10.00),
+    (Color(0xffffff00), 20.00),
+    (Color(0xffff0000), 30.00),
+  ];
+}

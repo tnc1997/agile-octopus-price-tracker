@@ -7,17 +7,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../common/functions.dart';
-import '../forecast/forecast_service.dart';
 
 class HistoricalChargeChart extends StatefulWidget {
   const HistoricalChargeChart({
     super.key,
-    required this.forecastCharges,
     required this.historicalCharges,
   });
 
-  final List<ForecastCharge> forecastCharges;
-
+  /// The confirmed unit rates to plot as a step line.
+  ///
+  /// Expected in ascending `validFrom` order; each point is drawn as a step
+  /// held from its `validFrom` to the next slot. The axis extent and the price
+  /// gradient are both derived from these values, so an empty list yields an
+  /// empty, auto-ranged chart.
   final List<HistoricalCharge> historicalCharges;
 
   @override
@@ -27,19 +29,15 @@ class HistoricalChargeChart extends StatefulWidget {
 }
 
 class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
-  /// The color gradient stops used to color each point by its unit rate.
+  /// The color gradient stops used to color the line by its unit rate.
   ///
   /// Loaded once in [initState] from the persisted `color_stops` preference,
   /// falling back to a built-in default when the user has not configured any.
-  /// Each entry pairs a color with the price (in pence per kWh) it applies at,
-  /// ordered ascending by price, and [calculatePriceColor] interpolates between
-  /// adjacent stops. Held as a [Future] so the chart can show a spinner until the
-  /// asynchronous preferences read completes.
+  /// Held as a [Future] so the chart can show a spinner until the asynchronous
+  /// preferences read completes.
   late final Future<List<(Color, double)>> _colorStops;
 
   /// The shared preferences store, read once from the provider in [initState].
-  ///
-  /// Source of the persisted `color_stops` gradient.
   late final SharedPreferencesAsync _preferences;
 
   @override
@@ -50,20 +48,14 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
       future: _colorStops,
       builder: (context, snapshot) {
         if (snapshot.data case final colorStops?) {
-          // Derive the axis extent from the data: the earliest slot start to the
-          // latest slot end, spanning both the confirmed prices and the forecast
-          // (the parent renders the chart only once the forecast has resolved).
-          // The bounds use the same local instants the series plot against, and
-          // are null when there is no data at all, leaving the axis to fall back
-          // to auto-ranging.
+          // Derive the axis extent from the data: the earliest slot start to
+          // the latest slot end. The bounds use the same local instants the
+          // series plots against, and are null when there is no data at all,
+          // leaving the axis to fall back to auto-ranging.
           final bounds = <DateTime>[
             for (final historicalCharge in widget.historicalCharges) ...[
               historicalCharge.validFrom!.toLocal(),
               historicalCharge.validTo!.toLocal(),
-            ],
-            for (final forecastCharge in widget.forecastCharges) ...[
-              forecastCharge.validFrom.toLocal(),
-              forecastCharge.validTo.toLocal(),
             ],
           ];
 
@@ -71,13 +63,11 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
           final xMaximum = bounds.maxOrNull;
 
           // Fix the price axis to the data extent so the gradient can map price
-          // to a pixel position: the shader spans the plot area, and pinning the
-          // axis makes its bottom edge [yMinimum] and top edge [yMaximum].
+          // to a pixel position: the shader spans the plot area, and pinning
+          // the axis makes its bottom edge [yMinimum] and top edge [yMaximum].
           final values = <double>[
             for (final historicalCharge in widget.historicalCharges)
               historicalCharge.valueIncVat,
-            for (final forecastCharge in widget.forecastCharges)
-              forecastCharge.valueIncVat,
           ];
 
           final yMinimum = values.minOrNull?.floorToDouble() ?? 0;
@@ -87,32 +77,18 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
             primaryXAxis: DateTimeAxis(
               minimum: xMinimum,
               maximum: xMaximum,
-              initialVisibleMinimum: xMinimum,
-              // Open on a day-ahead window from the first slot — the current
-              // and upcoming confirmed prices plus the start of the forecast —
-              // rather than the whole week at once. Anchoring on the first
-              // slot start keeps the current slot flush to the left edge;
-              // users can pan or zoom out to the derived extent.
-              initialVisibleMaximum: xMinimum?.add(
-                const Duration(
-                  days: 1,
-                ),
-              ),
               axisLabelFormatter: (details) {
                 final date = DateTime.fromMillisecondsSinceEpoch(
                   details.value.toInt(),
                 ).toLocal();
 
                 return ChartAxisLabel(
-                  '${DateFormat.Hm().format(date)}\n${DateFormat.EEEE().format(date)}',
+                  '${DateFormat.MMMMd().format(date)}\n${DateFormat.EEEE().format(date)}',
                   details.textStyle,
                 );
               },
             ),
             primaryYAxis: NumericAxis(
-              title: AxisTitle(
-                text: 'Price (p/kWh)',
-              ),
               numberFormat: NumberFormat('0.00'),
               minimum: yMinimum,
               maximum: yMaximum,
@@ -162,34 +138,6 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
                   ).createShader(details.rect);
                 },
               ),
-              if (widget.forecastCharges.isNotEmpty)
-                StepLineSeries<ForecastCharge, DateTime>(
-                  dataSource: widget.forecastCharges,
-                  // Dash and fade the line so the forecast reads as an
-                  // estimate rather than a confirmed Agile Octopus rate.
-                  dashArray: const [6.0, 4.0],
-                  opacity: 0.5,
-                  xValueMapper: (datum, index) {
-                    return datum.validFrom.toLocal();
-                  },
-                  yValueMapper: (datum, index) {
-                    return datum.valueIncVat;
-                  },
-                  sortFieldValueMapper: (datum, index) {
-                    return datum.validFrom.toLocal();
-                  },
-                  // Color the whole line by price with a vertical gradient rather
-                  // than per-point, so the vertical riser between two slots is
-                  // painted the color of the price it moves through instead of
-                  // inheriting the previous slot's color (see issue #32).
-                  onCreateShader: (details) {
-                    return buildPriceGradient(
-                      colorStops,
-                      yMinimum,
-                      yMaximum,
-                    ).createShader(details.rect);
-                  },
-                ),
             ],
           );
         }
@@ -212,41 +160,15 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
 
   /// Builds the tooltip the trackball shows when it settles on a point.
   ///
-  /// The chart draws two series — the confirmed prices first and, when there is
-  /// one, the forecast second — so [TrackballDetails.seriesIndex] tells which
-  /// list the touched point belongs to: index 1 is a [ForecastCharge] from the
-  /// widget's `forecastCharges`, and anything else is a confirmed
-  /// `HistoricalCharge` from its `historicalCharges`. Picking the matching list
-  /// matters because [TrackballDetails.pointIndex] is relative to its own series,
-  /// so indexing the other list would mislabel the point or, where the forecast
-  /// runs longer than the confirmed prices, throw a range error. Both charge
-  /// types carry the same three values the label needs, which are read into
-  /// shared locals here.
-  ///
-  /// The result is a small white rounded card showing the slot's local time
-  /// range (`HH:mm - HH:mm`, converted from the stored UTC instants) above the
-  /// unit rate formatted to two decimal places in pence per kWh.
+  /// The history chart draws a single series, so the touched point is always a
+  /// confirmed charge read off `historicalCharges` by
+  /// [TrackballDetails.pointIndex]. The card shows the slot's local date and
+  /// time range above the unit rate in pence per kWh; the date matters here
+  /// because the range can span many days.
   Widget _buildTrackball(
     TrackballDetails details,
   ) {
-    // The forecast is the second series, so a point from it is read off the
-    // forecast list; everything else is a confirmed charge. Both expose the same
-    // three fields the label needs.
-    final DateTime validFrom;
-    final DateTime validTo;
-    final double valueIncVat;
-
-    if (details.seriesIndex == 1) {
-      final datum = widget.forecastCharges[details.pointIndex!];
-      validFrom = datum.validFrom;
-      validTo = datum.validTo;
-      valueIncVat = datum.valueIncVat;
-    } else {
-      final datum = widget.historicalCharges[details.pointIndex!];
-      validFrom = datum.validFrom!;
-      validTo = datum.validTo!;
-      valueIncVat = datum.valueIncVat;
-    }
+    final datum = widget.historicalCharges[details.pointIndex!];
 
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -256,12 +178,14 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Text(
-          '${DateFormat.Hm().format(
-            validFrom.toLocal(),
+          '${DateFormat.MMMMEEEEd().format(
+            datum.validFrom!.toLocal(),
+          )}\n${DateFormat.Hm().format(
+            datum.validFrom!.toLocal(),
           )} - ${DateFormat.Hm().format(
-            validTo.toLocal(),
+            datum.validTo!.toLocal(),
           )}\n${NumberFormat('0.00p/kWh').format(
-            valueIncVat,
+            datum.valueIncVat,
           )}',
           style: TextStyle(
             color: Colors.black,

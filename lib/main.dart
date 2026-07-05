@@ -126,6 +126,9 @@ class MyApp extends StatelessWidget {
           surfaceContainerHighest: Color(0xff180048),
           outline: Color(0xff5840ff),
         ),
+        dividerTheme: DividerThemeData(
+          color: Color(0xff5840ff),
+        ),
       ),
     );
   }

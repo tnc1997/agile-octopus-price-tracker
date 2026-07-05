@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../history/history_screen.dart';
 import '../home/home_screen.dart';
 import '../settings/settings_screen.dart';
 import 'shell_screen.dart';
@@ -11,6 +12,9 @@ part 'shell_route.g.dart';
   routes: [
     TypedGoRoute<HomeRoute>(
       path: '/',
+    ),
+    TypedGoRoute<HistoryRoute>(
+      path: '/history',
     ),
     TypedGoRoute<SettingsRoute>(
       path: '/settings',
@@ -29,6 +33,18 @@ class ShellRoute extends ShellRouteData {
     return ShellScreen(
       child: navigator,
     );
+  }
+}
+
+class HistoryRoute extends GoRouteData with $HistoryRoute {
+  const HistoryRoute();
+
+  @override
+  Widget build(
+    BuildContext context,
+    GoRouterState state,
+  ) {
+    return const HistoryScreen();
   }
 }
 
