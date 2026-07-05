@@ -19,6 +19,10 @@ class ShellBottomNavigationBar extends StatelessWidget {
           label: 'Home',
         ),
         BottomNavigationBarItem(
+          icon: Icon(Icons.history),
+          label: 'History',
+        ),
+        BottomNavigationBarItem(
           icon: Icon(Icons.settings),
           label: 'Settings',
         ),
@@ -28,6 +32,8 @@ class ShellBottomNavigationBar extends StatelessWidget {
           case 0:
             const HomeRoute().go(context);
           case 1:
+            const HistoryRoute().go(context);
+          case 2:
             const SettingsRoute().go(context);
           default:
             const HomeRoute().go(context);
@@ -35,7 +41,8 @@ class ShellBottomNavigationBar extends StatelessWidget {
       },
       currentIndex: switch (GoRouterState.of(context).uri.path) {
         '/' => 0,
-        '/settings' => 1,
+        '/history' => 1,
+        '/settings' => 2,
         _ => 0,
       },
     );

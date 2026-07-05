@@ -20,13 +20,18 @@ class ShellNavigationRail extends StatelessWidget {
           label: Text('Home'),
         ),
         NavigationRailDestination(
+          icon: Icon(Icons.history),
+          label: Text('History'),
+        ),
+        NavigationRailDestination(
           icon: Icon(Icons.settings),
           label: Text('Settings'),
         ),
       ],
       selectedIndex: switch (GoRouterState.of(context).uri.path) {
         '/' => 0,
-        '/settings' => 1,
+        '/history' => 1,
+        '/settings' => 2,
         _ => 0,
       },
       onDestinationSelected: (index) {
@@ -34,6 +39,8 @@ class ShellNavigationRail extends StatelessWidget {
           case 0:
             const HomeRoute().go(context);
           case 1:
+            const HistoryRoute().go(context);
+          case 2:
             const SettingsRoute().go(context);
           default:
             const HomeRoute().go(context);
