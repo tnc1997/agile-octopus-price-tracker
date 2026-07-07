@@ -6,6 +6,7 @@ import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../common/functions.dart';
 import '../forecast/forecast_service.dart';
 import 'historical_charge_card.dart';
 import 'historical_charge_chart_card.dart';
@@ -23,7 +24,26 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  late final Future<PaginatedHistoricalChargeList> _future;
+  /// The color gradient stops used to color each textual charge by its unit
+  /// rate.
+  ///
+  /// Resolved once in [initState] from the persisted `color_stops` preference
+  /// (falling back to a built-in default) and handed down to the summary cards
+  /// and list tiles so they color their prices with the same mapping the chart
+  /// uses, rather than each small widget performing its own async read. Held as
+  /// a [Future] so the content can wait on the asynchronous read, exactly as the
+  /// chart does.
+  late final Future<List<(Color, double)>> _colorStops;
+
+  /// The confirmed unit rates, fetched once in [initState].
+  ///
+  /// Loads the next 96 half-hour slots (two days) for the configured import
+  /// product and tariff from the Octopus Energy API, starting at the current
+  /// instant. Sorted ascending by `validFrom` in [build] and passed down to the
+  /// summary cards, chart and list, and used as the point the forecast
+  /// continues from. Held as a [Future] so the screen can show a spinner until
+  /// the asynchronous fetch completes.
+  late final Future<PaginatedHistoricalChargeList> _historicalCharges;
 
   /// The shared preferences store, read once from the provider in [initState].
   ///
@@ -44,7 +64,7 @@ class _HomeScreenState extends State<HomeScreen> {
     BuildContext context,
   ) {
     return FutureBuilder(
-      future: _future,
+      future: _historicalCharges,
       builder: (context, snapshot) {
         if (snapshot.data?.results case final historicalCharges?) {
           historicalCharges.sort(
@@ -70,126 +90,158 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           }
 
-          return Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return CustomScrollView(
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.all(8.0),
-                      sliver: SliverGrid(
-                        delegate: SliverChildListDelegate.fixed(
-                          [
-                            HistoricalChargeCard(
-                              historicalCharge: historicalCharges[0],
-                              leading: Tooltip(
-                                message: 'Current',
-                                child: Icon(Icons.circle_outlined),
-                              ),
-                            ),
-                            HistoricalChargeCard(
-                              historicalCharge: historicalCharges[1],
-                              leading: Tooltip(
-                                message: 'Next',
-                                child: Icon(Icons.arrow_circle_right_outlined),
-                              ),
-                            ),
-                            HistoricalChargeCard(
-                              historicalCharge: minBy<HistoricalCharge, double>(
-                                historicalCharges,
-                                (historicalCharge) {
-                                  return historicalCharge.valueIncVat;
-                                },
-                              )!,
-                              leading: Tooltip(
-                                message: 'Lowest',
-                                child: Icon(Icons.arrow_circle_down_outlined),
-                              ),
-                            ),
-                            HistoricalChargeCard(
-                              historicalCharge: maxBy<HistoricalCharge, double>(
-                                historicalCharges,
-                                (historicalCharge) {
-                                  return historicalCharge.valueIncVat;
-                                },
-                              )!,
-                              leading: Tooltip(
-                                message: 'Highest',
-                                child: Icon(Icons.arrow_circle_up_outlined),
-                              ),
-                            ),
-                          ],
-                        ),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: constraints.maxWidth > 768 ? 4 : 2,
-                          mainAxisSpacing: 16.0,
-                          crossAxisSpacing: 16.0,
-                          childAspectRatio: 2.0,
-                        ),
-                      ),
-                    ),
-                    SliverPadding(
-                      padding: const EdgeInsets.all(8.0),
-                      sliver: SliverGrid(
-                        delegate: SliverChildListDelegate.fixed(
-                          [
-                            FutureBuilder(
-                              future: _forecastCharges,
-                              builder: (context, snapshot) {
-                                // Wait for the forecast to resolve before showing
-                                // the chart, so it renders once with the full data
-                                // rather than redrawing when the forecast arrives.
-                                if (snapshot.data case final forecastCharges?) {
-                                  return HistoricalChargeChartCard(
-                                    forecastCharges: forecastCharges,
-                                    historicalCharges: historicalCharges,
-                                  );
-                                }
-
-                                return const Card(
-                                  margin: EdgeInsets.zero,
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
+          // Wait for the color stops before showing the content so the summary
+          // cards and list tiles render once with their prices already colored,
+          // using the same mapping the chart does, rather than redrawing when
+          // the asynchronous preferences read completes.
+          return FutureBuilder(
+            future: _colorStops,
+            builder: (context, snapshot) {
+              if (snapshot.data case final colorStops?) {
+                return Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return CustomScrollView(
+                        slivers: [
+                          SliverPadding(
+                            padding: const EdgeInsets.all(8.0),
+                            sliver: SliverGrid(
+                              delegate: SliverChildListDelegate.fixed(
+                                [
+                                  HistoricalChargeCard(
+                                    colorStops: colorStops,
+                                    historicalCharge: historicalCharges[0],
+                                    leading: Tooltip(
+                                      message: 'Current',
+                                      child: Icon(Icons.circle_outlined),
+                                    ),
                                   ),
-                                );
-                              },
-                            ),
-                            FutureBuilder(
-                              future: _forecastCharges,
-                              builder: (context, snapshot) {
-                                // Likewise wait for the forecast before showing
-                                // the list, so its rows are complete rather
-                                // than growing when the forecast arrives.
-                                if (snapshot.data case final forecastCharges?) {
-                                  return HistoricalChargeScrollViewCard(
-                                    forecastCharges: forecastCharges,
-                                    historicalCharges: historicalCharges,
-                                  );
-                                }
-
-                                return const Card(
-                                  margin: EdgeInsets.zero,
-                                  child: Center(
-                                    child: CircularProgressIndicator(),
+                                  HistoricalChargeCard(
+                                    colorStops: colorStops,
+                                    historicalCharge: historicalCharges[1],
+                                    leading: Tooltip(
+                                      message: 'Next',
+                                      child: Icon(
+                                          Icons.arrow_circle_right_outlined),
+                                    ),
                                   ),
-                                );
-                              },
+                                  HistoricalChargeCard(
+                                    colorStops: colorStops,
+                                    historicalCharge:
+                                        minBy<HistoricalCharge, double>(
+                                      historicalCharges,
+                                      (historicalCharge) {
+                                        return historicalCharge.valueIncVat;
+                                      },
+                                    )!,
+                                    leading: Tooltip(
+                                      message: 'Lowest',
+                                      child: Icon(
+                                          Icons.arrow_circle_down_outlined),
+                                    ),
+                                  ),
+                                  HistoricalChargeCard(
+                                    colorStops: colorStops,
+                                    historicalCharge:
+                                        maxBy<HistoricalCharge, double>(
+                                      historicalCharges,
+                                      (historicalCharge) {
+                                        return historicalCharge.valueIncVat;
+                                      },
+                                    )!,
+                                    leading: Tooltip(
+                                      message: 'Highest',
+                                      child:
+                                          Icon(Icons.arrow_circle_up_outlined),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    constraints.maxWidth > 768 ? 4 : 2,
+                                mainAxisSpacing: 16.0,
+                                crossAxisSpacing: 16.0,
+                                childAspectRatio: 2.0,
+                              ),
                             ),
-                          ],
-                        ),
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: constraints.maxWidth > 768 ? 2 : 1,
-                          mainAxisSpacing: 16.0,
-                          crossAxisSpacing: 16.0,
-                          childAspectRatio: 1.0,
-                        ),
-                      ),
-                    ),
-                  ],
+                          ),
+                          SliverPadding(
+                            padding: const EdgeInsets.all(8.0),
+                            sliver: SliverGrid(
+                              delegate: SliverChildListDelegate.fixed(
+                                [
+                                  FutureBuilder(
+                                    future: _forecastCharges,
+                                    builder: (context, snapshot) {
+                                      // Wait for the forecast to resolve before showing
+                                      // the chart, so it renders once with the full data
+                                      // rather than redrawing when the forecast arrives.
+                                      if (snapshot.data
+                                          case final forecastCharges?) {
+                                        return HistoricalChargeChartCard(
+                                          colorStops: colorStops,
+                                          forecastCharges: forecastCharges,
+                                          historicalCharges: historicalCharges,
+                                        );
+                                      }
+
+                                      return const Card(
+                                        margin: EdgeInsets.zero,
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                  FutureBuilder(
+                                    future: _forecastCharges,
+                                    builder: (context, snapshot) {
+                                      // Likewise wait for the forecast before showing
+                                      // the list, so its rows are complete rather
+                                      // than growing when the forecast arrives.
+                                      if (snapshot.data
+                                          case final forecastCharges?) {
+                                        return HistoricalChargeScrollViewCard(
+                                          colorStops: colorStops,
+                                          forecastCharges: forecastCharges,
+                                          historicalCharges: historicalCharges,
+                                        );
+                                      }
+
+                                      return const Card(
+                                        margin: EdgeInsets.zero,
+                                        child: Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    constraints.maxWidth > 768 ? 2 : 1,
+                                mainAxisSpacing: 16.0,
+                                crossAxisSpacing: 16.0,
+                                childAspectRatio: 1.0,
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 );
-              },
-            ),
+              }
+
+              return Center(
+                child: CircularProgressIndicator(),
+              );
+            },
           );
         }
 
@@ -207,7 +259,9 @@ class _HomeScreenState extends State<HomeScreen> {
     final client = context.read<OctopusEnergyApiClient>();
     _preferences = context.read<SharedPreferencesAsync>();
 
-    _future = (
+    _colorStops = getColorStops(_preferences);
+
+    _historicalCharges = (
       _preferences.getString('import_product_code'),
       _preferences.getString('import_tariff_code'),
     ).wait.then(

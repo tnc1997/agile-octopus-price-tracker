@@ -2,13 +2,23 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 
+import '../common/functions.dart';
+
 class HistoricalChargeCard extends StatelessWidget {
   const HistoricalChargeCard({
     super.key,
+    required this.colorStops,
     required this.historicalCharge,
     this.leading,
     this.trailing,
   });
+
+  /// The color gradient stops used to color the price value by its unit rate.
+  ///
+  /// Passed through [calculatePriceColor] so the number is drawn in the same
+  /// color as that price on the chart's gradient line; the time range and icons
+  /// keep the default text color.
+  final List<(Color, double)> colorStops;
 
   final HistoricalCharge historicalCharge;
 
@@ -54,6 +64,12 @@ class HistoricalChargeCard extends StatelessWidget {
                 Text(
                   NumberFormat('0.00p/kWh').format(
                     historicalCharge.valueIncVat,
+                  ),
+                  style: TextStyle(
+                    color: calculatePriceColor(
+                      colorStops,
+                      historicalCharge.valueIncVat,
+                    ),
                   ),
                 ),
               ],

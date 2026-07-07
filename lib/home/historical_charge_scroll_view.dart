@@ -10,9 +10,12 @@ import 'historical_charge_list_tile.dart';
 class HistoricalChargeScrollView extends StatelessWidget {
   const HistoricalChargeScrollView({
     super.key,
+    required this.colorStops,
     required this.forecastCharges,
     required this.historicalCharges,
   });
+
+  final List<(Color, double)> colorStops;
 
   final List<ForecastCharge> forecastCharges;
 
@@ -30,6 +33,7 @@ class HistoricalChargeScrollView extends StatelessWidget {
         (
           historicalCharge.validFrom!,
           HistoricalChargeListTile(
+            colorStops: colorStops,
             historicalCharge: historicalCharge,
           ),
         ),
@@ -37,6 +41,7 @@ class HistoricalChargeScrollView extends StatelessWidget {
         (
           forecastCharge.validFrom,
           ForecastChargeListTile(
+            colorStops: colorStops,
             forecastCharge: forecastCharge,
           ),
         ),

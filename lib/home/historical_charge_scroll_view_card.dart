@@ -7,9 +7,12 @@ import 'historical_charge_scroll_view.dart';
 class HistoricalChargeScrollViewCard extends StatelessWidget {
   const HistoricalChargeScrollViewCard({
     super.key,
+    required this.colorStops,
     required this.forecastCharges,
     required this.historicalCharges,
   });
+
+  final List<(Color, double)> colorStops;
 
   final List<ForecastCharge> forecastCharges;
 
@@ -23,6 +26,7 @@ class HistoricalChargeScrollViewCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       child: HistoricalChargeScrollView(
+        colorStops: colorStops,
         forecastCharges: forecastCharges,
         historicalCharges: historicalCharges,
       ),
