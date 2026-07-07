@@ -6,8 +6,12 @@ import 'historical_charge_chart.dart';
 class HistoricalChargeChartCard extends StatelessWidget {
   const HistoricalChargeChartCard({
     super.key,
+    required this.colorStops,
     required this.historicalCharges,
   });
+
+  /// The color gradient stops used to color the enclosed chart by unit rate.
+  final List<(Color, double)> colorStops;
 
   /// The confirmed unit rates the enclosed chart plots.
   ///
@@ -24,6 +28,7 @@ class HistoricalChargeChartCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: HistoricalChargeChart(
+          colorStops: colorStops,
           historicalCharges: historicalCharges,
         ),
       ),

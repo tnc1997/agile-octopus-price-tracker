@@ -4,6 +4,7 @@ import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../common/functions.dart';
 import 'historical_charge_chart_card.dart';
 import 'historical_charge_period.dart';
 import 'historical_charge_period_segmented_button.dart';
@@ -28,8 +29,19 @@ class _HistoryScreenState extends State<HistoryScreen> {
   /// The shared preferences store, read once from the provider in [initState].
   ///
   /// Source of the `import_product_code` and `import_tariff_code` the charges
-  /// are fetched for.
+  /// are fetched for, and the persisted `color_stops` gradient.
   late final SharedPreferencesAsync _preferences;
+
+  /// The color gradient stops used to color the textual charges and the chart
+  /// by unit rate, or null until the asynchronous preferences read completes.
+  ///
+  /// Resolved once in [initState] via [getColorStops] (falling back to a
+  /// built-in default) and handed down to the summary cards, daily summary
+  /// list and chart so they all color prices with the same mapping, rather than
+  /// each widget performing its own async read. Held in state — like
+  /// [_historicalCharges] — so the daily summary can stay a lazily-built
+  /// [SliverList] directly among the slivers.
+  List<(Color, double)>? _colorStops;
 
   /// The start and end dates the charges are shown for.
   ///
@@ -54,6 +66,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
   Widget build(
     BuildContext context,
   ) {
+    final colorStops = _colorStops;
     final historicalCharges = _historicalCharges;
 
     return Padding(
@@ -90,12 +103,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
               ),
             ),
           ),
-          if (historicalCharges != null)
+          if (historicalCharges != null && colorStops != null)
             if (historicalCharges.isNotEmpty) ...[
               SliverPadding(
                 padding: const EdgeInsetsGeometry.all(8.0),
                 sliver: SliverToBoxAdapter(
                   child: HistoricalChargeSummary(
+                    colorStops: colorStops,
                     historicalCharges: historicalCharges,
                   ),
                 ),
@@ -104,12 +118,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                 padding: const EdgeInsetsGeometry.all(8.0),
                 sliver: SliverToBoxAdapter(
                   child: HistoricalChargeChartCard(
+                    colorStops: colorStops,
                     historicalCharges: historicalCharges,
                   ),
                 ),
               ),
             ],
-          if (historicalCharges == null)
+          if (historicalCharges == null || colorStops == null)
             const SliverPadding(
               padding: EdgeInsets.all(8.0),
               sliver: SliverToBoxAdapter(
@@ -139,6 +154,7 @@ class _HistoryScreenState extends State<HistoryScreen> {
             SliverPadding(
               padding: const EdgeInsets.all(8.0),
               sliver: HistoricalChargeSliverList(
+                colorStops: colorStops,
                 historicalCharges: historicalCharges,
               ),
             ),
@@ -153,6 +169,20 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
     _client = context.read<OctopusEnergyApiClient>();
     _preferences = context.read<SharedPreferencesAsync>();
+
+    // Resolve the color stops once, shared by the chart and the textual
+    // charges, and store them in state so the content can render with its
+    // prices already colored (falling back to the built-in default when the
+    // user has not configured any, inside [getColorStops]).
+    getColorStops(_preferences).then((colorStops) {
+      if (!mounted) {
+        return;
+      }
+
+      setState(() {
+        _colorStops = colorStops;
+      });
+    });
 
     // Default to the last week up to and including today.
     final period = _period = HistoricalChargePeriod.sevenDays;

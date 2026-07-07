@@ -2,8 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:octopus_energy_api_client/v1.dart';
-import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
 
 import '../common/functions.dart';
@@ -11,8 +9,16 @@ import '../common/functions.dart';
 class HistoricalChargeChart extends StatefulWidget {
   const HistoricalChargeChart({
     super.key,
+    required this.colorStops,
     required this.historicalCharges,
   });
+
+  /// The color gradient stops used to color the line by its unit rate.
+  ///
+  /// Resolved once by the history screen and handed down so the chart and the
+  /// textual charges share a single source of truth; [buildPriceGradient]
+  /// samples [calculatePriceColor] across these stops to paint the step line.
+  final List<(Color, double)> colorStops;
 
   /// The confirmed unit rates to plot as a step line.
   ///
@@ -29,133 +35,102 @@ class HistoricalChargeChart extends StatefulWidget {
 }
 
 class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
-  /// The color gradient stops used to color the line by its unit rate.
-  ///
-  /// Loaded once in [initState] from the persisted `color_stops` preference,
-  /// falling back to a built-in default when the user has not configured any.
-  /// Held as a [Future] so the chart can show a spinner until the asynchronous
-  /// preferences read completes.
-  late final Future<List<(Color, double)>> _colorStops;
-
-  /// The shared preferences store, read once from the provider in [initState].
-  late final SharedPreferencesAsync _preferences;
-
   @override
   Widget build(
     BuildContext context,
   ) {
-    return FutureBuilder(
-      future: _colorStops,
-      builder: (context, snapshot) {
-        if (snapshot.data case final colorStops?) {
-          // Derive the axis extent from the data: the earliest slot start to
-          // the latest slot end. The bounds use the same local instants the
-          // series plots against, and are null when there is no data at all,
-          // leaving the axis to fall back to auto-ranging.
-          final bounds = <DateTime>[
-            for (final historicalCharge in widget.historicalCharges) ...[
-              historicalCharge.validFrom!.toLocal(),
-              historicalCharge.validTo!.toLocal(),
-            ],
-          ];
+    // Derive the axis extent from the data: the earliest slot start to the
+    // latest slot end. The bounds use the same local instants the series plots
+    // against, and are null when there is no data at all, leaving the axis to
+    // fall back to auto-ranging.
+    final bounds = <DateTime>[
+      for (final historicalCharge in widget.historicalCharges) ...[
+        historicalCharge.validFrom!.toLocal(),
+        historicalCharge.validTo!.toLocal(),
+      ],
+    ];
 
-          final xMinimum = bounds.minOrNull;
-          final xMaximum = bounds.maxOrNull;
+    final xMinimum = bounds.minOrNull;
+    final xMaximum = bounds.maxOrNull;
 
-          // Fix the price axis to the data extent so the gradient can map price
-          // to a pixel position: the shader spans the plot area, and pinning
-          // the axis makes its bottom edge [yMinimum] and top edge [yMaximum].
-          final values = <double>[
-            for (final historicalCharge in widget.historicalCharges)
-              historicalCharge.valueIncVat,
-          ];
+    // Fix the price axis to the data extent so the gradient can map price to a
+    // pixel position: the shader spans the plot area, and pinning the axis
+    // makes its bottom edge [yMinimum] and top edge [yMaximum].
+    final values = <double>[
+      for (final historicalCharge in widget.historicalCharges)
+        historicalCharge.valueIncVat,
+    ];
 
-          final yMinimum = values.minOrNull?.floorToDouble() ?? 0;
-          final yMaximum = values.maxOrNull?.ceilToDouble() ?? 0;
+    final yMinimum = values.minOrNull?.floorToDouble() ?? 0;
+    final yMaximum = values.maxOrNull?.ceilToDouble() ?? 0;
 
-          return SfCartesianChart(
-            primaryXAxis: DateTimeAxis(
-              minimum: xMinimum,
-              maximum: xMaximum,
-              axisLabelFormatter: (details) {
-                final date = DateTime.fromMillisecondsSinceEpoch(
-                  details.value.toInt(),
-                ).toLocal();
+    return SfCartesianChart(
+      primaryXAxis: DateTimeAxis(
+        minimum: xMinimum,
+        maximum: xMaximum,
+        axisLabelFormatter: (details) {
+          final date = DateTime.fromMillisecondsSinceEpoch(
+            details.value.toInt(),
+          ).toLocal();
 
-                return ChartAxisLabel(
-                  '${DateFormat.MMMMd().format(date)}\n${DateFormat.EEEE().format(date)}',
-                  details.textStyle,
-                );
-              },
-            ),
-            primaryYAxis: NumericAxis(
-              numberFormat: NumberFormat('0.00'),
-              minimum: yMinimum,
-              maximum: yMaximum,
-              plotBands: [
-                PlotBand(
-                  start: 0,
-                  end: 0,
-                  borderColor: Theme.of(context).colorScheme.onSurface,
-                  borderWidth: 1,
-                ),
-              ],
-            ),
-            zoomPanBehavior: ZoomPanBehavior(
-              enablePinching: true,
-              enableDoubleTapZooming: true,
-              enablePanning: true,
-              enableMouseWheelZooming: true,
-              zoomMode: ZoomMode.x,
-            ),
-            trackballBehavior: TrackballBehavior(
-              enable: true,
-              builder: (context, details) {
-                return _buildTrackball(details);
-              },
-            ),
-            series: [
-              StepLineSeries<HistoricalCharge, DateTime>(
-                dataSource: widget.historicalCharges,
-                xValueMapper: (datum, index) {
-                  return datum.validFrom!.toLocal();
-                },
-                yValueMapper: (datum, index) {
-                  return datum.valueIncVat;
-                },
-                sortFieldValueMapper: (datum, index) {
-                  return datum.validFrom!.toLocal();
-                },
-                // Color the whole line by price with a vertical gradient rather
-                // than per-point, so the vertical riser between two slots is
-                // painted the color of the price it moves through instead of
-                // inheriting the previous slot's color (see issue #32).
-                onCreateShader: (details) {
-                  return buildPriceGradient(
-                    colorStops,
-                    yMinimum,
-                    yMaximum,
-                  ).createShader(details.rect);
-                },
-              ),
-            ],
+          return ChartAxisLabel(
+            '${DateFormat.MMMMd().format(date)}\n${DateFormat.EEEE().format(date)}',
+            details.textStyle,
           );
-        }
-
-        return Center(
-          child: CircularProgressIndicator(),
-        );
-      },
+        },
+      ),
+      primaryYAxis: NumericAxis(
+        numberFormat: NumberFormat('0.00'),
+        minimum: yMinimum,
+        maximum: yMaximum,
+        plotBands: [
+          PlotBand(
+            start: 0,
+            end: 0,
+            borderColor: Theme.of(context).colorScheme.onSurface,
+            borderWidth: 1,
+          ),
+        ],
+      ),
+      zoomPanBehavior: ZoomPanBehavior(
+        enablePinching: true,
+        enableDoubleTapZooming: true,
+        enablePanning: true,
+        enableMouseWheelZooming: true,
+        zoomMode: ZoomMode.x,
+      ),
+      trackballBehavior: TrackballBehavior(
+        enable: true,
+        builder: (context, details) {
+          return _buildTrackball(details);
+        },
+      ),
+      series: [
+        StepLineSeries<HistoricalCharge, DateTime>(
+          dataSource: widget.historicalCharges,
+          xValueMapper: (datum, index) {
+            return datum.validFrom!.toLocal();
+          },
+          yValueMapper: (datum, index) {
+            return datum.valueIncVat;
+          },
+          sortFieldValueMapper: (datum, index) {
+            return datum.validFrom!.toLocal();
+          },
+          // Color the whole line by price with a vertical gradient rather than
+          // per-point, so the vertical riser between two slots is painted the
+          // color of the price it moves through instead of inheriting the
+          // previous slot's color (see issue #32).
+          onCreateShader: (details) {
+            return buildPriceGradient(
+              widget.colorStops,
+              yMinimum,
+              yMaximum,
+            ).createShader(details.rect);
+          },
+        ),
+      ],
     );
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    _preferences = context.read<SharedPreferencesAsync>();
-
-    _colorStops = getColorStops(_preferences);
   }
 
   /// Builds the tooltip the trackball shows when it settles on a point.
