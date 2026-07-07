@@ -7,9 +7,12 @@ import 'historical_charge_chart.dart';
 class HistoricalChargeChartCard extends StatelessWidget {
   const HistoricalChargeChartCard({
     super.key,
+    required this.colorStops,
     required this.forecastCharges,
     required this.historicalCharges,
   });
+
+  final List<(Color, double)> colorStops;
 
   final List<ForecastCharge> forecastCharges;
 
@@ -26,6 +29,7 @@ class HistoricalChargeChartCard extends StatelessWidget {
           vertical: 16.0,
         ),
         child: HistoricalChargeChart(
+          colorStops: colorStops,
           forecastCharges: forecastCharges,
           historicalCharges: historicalCharges,
         ),
