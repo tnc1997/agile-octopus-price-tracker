@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 
+import '../common/functions.dart';
+
 /// A lazily-built list of per-day charge summaries on a card surface.
 ///
 /// The rows are a [SliverList] so only the visible days are built — a wide
@@ -13,8 +15,16 @@ import 'package:octopus_energy_api_client/v1.dart';
 class HistoricalChargeSliverList extends StatelessWidget {
   const HistoricalChargeSliverList({
     super.key,
+    required this.colorStops,
     required this.historicalCharges,
   });
+
+  /// The color gradient stops used to color each daily value by its unit rate.
+  ///
+  /// Threaded down to the per-day rows so the Average, Lowest and Highest
+  /// values are drawn in the same color as those prices on the chart's gradient
+  /// line; the weekday/date column keeps the default text color.
+  final List<(Color, double)> colorStops;
 
   /// The charges summarized per calendar day.
   ///
@@ -60,6 +70,7 @@ class HistoricalChargeSliverList extends StatelessWidget {
         sliver: SliverList.separated(
           itemBuilder: (context, index) {
             return _DailyHistoricalChargeSummaryRow(
+              colorStops: colorStops,
               date: summaries[index].key,
               historicalCharges: summaries[index].value,
             );
@@ -76,9 +87,17 @@ class HistoricalChargeSliverList extends StatelessWidget {
 
 class _DailyHistoricalChargeSummaryRow extends StatelessWidget {
   const _DailyHistoricalChargeSummaryRow({
+    required this.colorStops,
     required this.date,
     required this.historicalCharges,
   });
+
+  /// The color gradient stops used to color the day's numeric values.
+  ///
+  /// The average, lowest and highest unit rates are each passed through
+  /// [calculatePriceColor] and the resulting color is handed to their columns;
+  /// the weekday/date column is given no color and keeps the default.
+  final List<(Color, double)> colorStops;
 
   /// The local calendar day this row summarizes, shown as the row's heading.
   final DateTime date;
@@ -124,6 +143,7 @@ class _DailyHistoricalChargeSummaryRow extends StatelessWidget {
         Expanded(
           flex: 2,
           child: _DailyHistoricalChargeSummaryColumn(
+            color: calculatePriceColor(colorStops, sum / length),
             label: 'Average',
             value: NumberFormat('0.00').format(sum / length),
           ),
@@ -131,6 +151,7 @@ class _DailyHistoricalChargeSummaryRow extends StatelessWidget {
         Expanded(
           flex: 2,
           child: _DailyHistoricalChargeSummaryColumn(
+            color: calculatePriceColor(colorStops, min),
             label: 'Lowest',
             value: NumberFormat('0.00').format(min),
           ),
@@ -138,6 +159,7 @@ class _DailyHistoricalChargeSummaryRow extends StatelessWidget {
         Expanded(
           flex: 2,
           child: _DailyHistoricalChargeSummaryColumn(
+            color: calculatePriceColor(colorStops, max),
             label: 'Highest',
             value: NumberFormat('0.00').format(max),
           ),
@@ -149,9 +171,17 @@ class _DailyHistoricalChargeSummaryRow extends StatelessWidget {
 
 class _DailyHistoricalChargeSummaryColumn extends StatelessWidget {
   const _DailyHistoricalChargeSummaryColumn({
+    this.color,
     required this.label,
     required this.value,
   });
+
+  /// The color to draw the [value] in, or null to keep the default.
+  ///
+  /// The numeric columns pass the color their unit rate maps to on the chart's
+  /// gradient; the weekday/date column leaves this null so it stays the default
+  /// text color.
+  final Color? color;
 
   /// The caption shown above the value (a column heading or the weekday).
   final String label;
@@ -172,7 +202,9 @@ class _DailyHistoricalChargeSummaryColumn extends StatelessWidget {
         ),
         Text(
           value,
-          style: Theme.of(context).textTheme.titleMedium,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: color,
+              ),
         ),
       ],
     );

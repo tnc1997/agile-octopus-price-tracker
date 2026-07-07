@@ -6,8 +6,12 @@ import 'historical_charge_summary_statistic_card.dart';
 class HistoricalChargeSummary extends StatelessWidget {
   const HistoricalChargeSummary({
     super.key,
+    required this.colorStops,
     required this.historicalCharges,
   });
+
+  /// The color gradient stops used to color each statistic card by unit rate.
+  final List<(Color, double)> colorStops;
 
   /// The charges the average, lowest and highest prices are computed over.
   ///
@@ -43,18 +47,21 @@ class HistoricalChargeSummary extends StatelessWidget {
       children: [
         Expanded(
           child: HistoricalChargeSummaryStatisticCard(
+            colorStops: colorStops,
             label: 'Average',
             value: sum / length,
           ),
         ),
         Expanded(
           child: HistoricalChargeSummaryStatisticCard(
+            colorStops: colorStops,
             label: 'Lowest',
             value: min,
           ),
         ),
         Expanded(
           child: HistoricalChargeSummaryStatisticCard(
+            colorStops: colorStops,
             label: 'Highest',
             value: max,
           ),
