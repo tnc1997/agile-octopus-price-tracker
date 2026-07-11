@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:octopus_energy_api_client/v1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'extensions.dart';
@@ -113,6 +114,81 @@ Color? calculatePriceColor(
   }
 
   return colorStops.last.$1;
+}
+
+/// Finds the cheapest contiguous window of [duration] within [historicalCharges].
+///
+/// Running an appliance needs a sustained low price, not just one favourable
+/// slot, so this looks for a run of consecutive charges — each one's
+/// `validFrom` matching the previous one's `validTo`, with no gaps — spanning
+/// exactly [duration], and returns whichever such window has the lowest
+/// average `valueIncVat`, alongside that average. Returns `null` if
+/// [historicalCharges] contains no window of that exact length.
+(List<HistoricalCharge>, double)? findCheapestWindow(
+  List<HistoricalCharge> historicalCharges,
+  Duration duration,
+) {
+  // Tracks the cheapest window found so far, across every starting position.
+  List<HistoricalCharge>? cheapestWindow;
+  // Its average `valueIncVat`, kept alongside so it isn't recomputed later.
+  double? cheapestAverage;
+
+  // Try every possible starting slot as the beginning of a candidate window.
+  for (var i = 0; i < historicalCharges.length; i++) {
+    // The window always starts with the slot at `i` itself.
+    final window = [historicalCharges[i]];
+    // Running total of `valueIncVat` for the slots in `window`, seeded with
+    // the starting slot since the loop below only adds to it from `i + 1`.
+    var sum = historicalCharges[i].valueIncVat;
+    // Count of slots in `window`, seeded to match `sum` above.
+    var length = 1;
+
+    // Extend the window forwards, one slot at a time, from `i`.
+    for (var j = i + 1; j < historicalCharges.length; j++) {
+      final previous = historicalCharges[j - 1];
+      final current = historicalCharges[j];
+
+      // A gap between slots breaks contiguity, so this window can't be
+      // extended any further.
+      if (current.validFrom != previous.validTo) {
+        break;
+      }
+
+      // Adding this slot would overshoot the requested duration, so stop
+      // before it's included.
+      if (current.validTo!.difference(historicalCharges[i].validFrom!) >
+          duration) {
+        break;
+      }
+
+      // The slot fits within the window, so include it.
+      window.add(current);
+      sum += current.valueIncVat;
+      length++;
+    }
+
+    // The window built above didn't reach exactly `duration` (either the
+    // charges ran out or a gap stopped it short), so it's not a valid
+    // candidate.
+    if (window.last.validTo!.difference(historicalCharges[i].validFrom!) !=
+        duration) {
+      continue;
+    }
+
+    // Keep this window if it's the first valid one found, or cheaper than
+    // the best one seen so far.
+    if (cheapestAverage == null || sum / length < cheapestAverage) {
+      cheapestWindow = window;
+      cheapestAverage = sum / length;
+    }
+  }
+
+  // No starting position produced a window of exactly `duration`.
+  if (cheapestWindow == null || cheapestAverage == null) {
+    return null;
+  }
+
+  return (cheapestWindow, cheapestAverage);
 }
 
 /// Gets the color gradient stops used to color a price by its unit rate.
