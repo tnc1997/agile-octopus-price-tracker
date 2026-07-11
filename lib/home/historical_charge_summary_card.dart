@@ -8,22 +8,40 @@ class HistoricalChargeSummaryCard extends StatelessWidget {
     super.key,
     required this.colorStops,
     required this.label,
+    this.prefix,
     required this.sublabel,
     required this.value,
   });
 
+  /// The color gradient stops used to color [value] by unit rate.
   final List<(Color, double)> colorStops;
 
+  /// The heading identifying what this card summarizes, e.g. `'Best'`.
   final String label;
 
+  /// Text shown ahead of [value], e.g. `'avg'` to mark an averaged rather
+  /// than a single-slot price. Omitted from the rendered text when `null`.
+  final String? prefix;
+
+  /// The time range [value] applies to, shown beneath [label].
   final String sublabel;
 
+  /// The unit rate this card summarizes, in pence per kilowatt hour.
   final double value;
 
   @override
   Widget build(
     BuildContext context,
   ) {
+    final buffer = StringBuffer();
+
+    if (prefix case final prefix?) {
+      buffer.write(prefix);
+      buffer.write(' ');
+    }
+
+    buffer.write(NumberFormat('0.00').format(value));
+
     return Card(
       margin: EdgeInsets.zero,
       child: Padding(
@@ -45,7 +63,7 @@ class HistoricalChargeSummaryCard extends StatelessWidget {
               ),
             ),
             Text(
-              NumberFormat('0.00').format(value),
+              '$buffer',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     color: calculatePriceColor(colorStops, value),
                   ),
