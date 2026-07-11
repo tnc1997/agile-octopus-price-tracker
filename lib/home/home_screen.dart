@@ -8,7 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../common/functions.dart';
 import '../forecast/forecast_service.dart';
 import 'historical_charge_chart_card.dart';
-import 'historical_charge_scroll_view_card.dart';
+import 'historical_charge_sliver_main_axis_group.dart';
 import 'historical_charge_summary_sliver_grid.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -99,83 +99,59 @@ class _HomeScreenState extends State<HomeScreen> {
               if (snapshot.data case final colorStops?) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      return CustomScrollView(
-                        slivers: [
-                          SliverPadding(
-                            padding: const EdgeInsets.all(8.0),
-                            sliver: HistoricalChargeSummarySliverGrid(
-                              colorStops: colorStops,
-                              historicalCharges: historicalCharges,
-                            ),
-                          ),
-                          SliverPadding(
-                            padding: const EdgeInsets.all(8.0),
-                            sliver: SliverGrid(
-                              delegate: SliverChildListDelegate.fixed(
-                                [
-                                  FutureBuilder(
-                                    future: _forecastCharges,
-                                    builder: (context, snapshot) {
-                                      // Wait for the forecast to resolve before showing
-                                      // the chart, so it renders once with the full data
-                                      // rather than redrawing when the forecast arrives.
-                                      if (snapshot.data
-                                          case final forecastCharges?) {
-                                        return HistoricalChargeChartCard(
-                                          colorStops: colorStops,
-                                          forecastCharges: forecastCharges,
-                                          historicalCharges: historicalCharges,
-                                        );
-                                      }
-
-                                      return const Card(
-                                        margin: EdgeInsets.zero,
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      );
-                                    },
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.all(8.0),
+                        sliver: HistoricalChargeSummarySliverGrid(
+                          colorStops: colorStops,
+                          historicalCharges: historicalCharges,
+                        ),
+                      ),
+                      FutureBuilder(
+                        future: _forecastCharges,
+                        builder: (context, snapshot) {
+                          // Wait for the forecast to resolve before showing the
+                          // chart and list, so they each render once with the
+                          // full data rather than redrawing when the forecast
+                          // arrives, and so only one spinner shows while both
+                          // wait on the same future.
+                          if (snapshot.data case final forecastCharges?) {
+                            return SliverMainAxisGroup(
+                              slivers: [
+                                SliverPadding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  sliver: SliverToBoxAdapter(
+                                    child: HistoricalChargeChartCard(
+                                      colorStops: colorStops,
+                                      forecastCharges: forecastCharges,
+                                      historicalCharges: historicalCharges,
+                                    ),
                                   ),
-                                  FutureBuilder(
-                                    future: _forecastCharges,
-                                    builder: (context, snapshot) {
-                                      // Likewise wait for the forecast before showing
-                                      // the list, so its rows are complete rather
-                                      // than growing when the forecast arrives.
-                                      if (snapshot.data
-                                          case final forecastCharges?) {
-                                        return HistoricalChargeScrollViewCard(
-                                          colorStops: colorStops,
-                                          forecastCharges: forecastCharges,
-                                          historicalCharges: historicalCharges,
-                                        );
-                                      }
-
-                                      return const Card(
-                                        margin: EdgeInsets.zero,
-                                        child: Center(
-                                          child: CircularProgressIndicator(),
-                                        ),
-                                      );
-                                    },
+                                ),
+                                SliverPadding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  sliver: HistoricalChargeSliverMainAxisGroup(
+                                    colorStops: colorStops,
+                                    forecastCharges: forecastCharges,
+                                    historicalCharges: historicalCharges,
                                   ),
-                                ],
-                              ),
-                              gridDelegate:
-                                  SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount:
-                                    constraints.maxWidth > 768 ? 2 : 1,
-                                mainAxisSpacing: 16.0,
-                                crossAxisSpacing: 16.0,
-                                childAspectRatio: 1.0,
+                                ),
+                              ],
+                            );
+                          }
+
+                          return const SliverPadding(
+                            padding: EdgeInsets.all(8.0),
+                            sliver: SliverToBoxAdapter(
+                              child: Center(
+                                child: CircularProgressIndicator(),
                               ),
                             ),
-                          ),
-                        ],
-                      );
-                    },
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 );
               }
