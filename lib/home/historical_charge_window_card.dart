@@ -3,8 +3,8 @@ import 'package:intl/intl.dart';
 
 import '../common/functions.dart';
 
-class HistoricalChargeSummaryCard extends StatelessWidget {
-  const HistoricalChargeSummaryCard({
+class HistoricalChargeWindowCard extends StatelessWidget {
+  const HistoricalChargeWindowCard({
     super.key,
     required this.colorStops,
     required this.label,
@@ -16,7 +16,7 @@ class HistoricalChargeSummaryCard extends StatelessWidget {
   /// The color gradient stops used to color [value] by unit rate.
   final List<(Color, double)> colorStops;
 
-  /// The heading identifying what this card summarizes, e.g. `'Best'`.
+  /// The heading identifying what this card displays, e.g. `'Best'`.
   final String label;
 
   /// Text shown ahead of [value], e.g. `'avg'` to mark an averaged rather
@@ -26,7 +26,7 @@ class HistoricalChargeSummaryCard extends StatelessWidget {
   /// The time range [value] applies to, shown beneath [label].
   final String sublabel;
 
-  /// The unit rate this card summarizes, in pence per kilowatt hour.
+  /// The unit rate this card displays, in pence per kilowatt hour.
   final double value;
 
   @override
