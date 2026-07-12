@@ -4,10 +4,10 @@ import 'package:intl/intl.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 
 import '../common/functions.dart';
-import 'historical_charge_summary_card.dart';
+import 'historical_charge_window_card.dart';
 
-class HistoricalChargeSummarySliverGrid extends StatelessWidget {
-  const HistoricalChargeSummarySliverGrid({
+class HistoricalChargeWindowSliverGrid extends StatelessWidget {
+  const HistoricalChargeWindowSliverGrid({
     super.key,
     required this.colorStops,
     required this.historicalCharges,
@@ -50,7 +50,7 @@ class HistoricalChargeSummarySliverGrid extends StatelessWidget {
       delegate: SliverChildListDelegate.fixed(
         [
           if (historicalCharges.isNotEmpty)
-            HistoricalChargeSummaryCard(
+            HistoricalChargeWindowCard(
               colorStops: colorStops,
               label: 'Current',
               sublabel: '${DateFormat.Hm().format(
@@ -61,7 +61,7 @@ class HistoricalChargeSummarySliverGrid extends StatelessWidget {
               value: historicalCharges[0].valueIncVat,
             ),
           if (historicalCharges.length > 1)
-            HistoricalChargeSummaryCard(
+            HistoricalChargeWindowCard(
               colorStops: colorStops,
               label: 'Next',
               sublabel: '${DateFormat.Hm().format(
@@ -72,7 +72,7 @@ class HistoricalChargeSummarySliverGrid extends StatelessWidget {
               value: historicalCharges[1].valueIncVat,
             ),
           if (min != null)
-            HistoricalChargeSummaryCard(
+            HistoricalChargeWindowCard(
               colorStops: colorStops,
               label: 'Best',
               prefix: 'avg',
@@ -84,7 +84,7 @@ class HistoricalChargeSummarySliverGrid extends StatelessWidget {
               value: min.$2,
             ),
           if (max != null)
-            HistoricalChargeSummaryCard(
+            HistoricalChargeWindowCard(
               colorStops: colorStops,
               label: 'Avoid',
               sublabel: '${DateFormat.Hm().format(
@@ -145,7 +145,7 @@ class HistoricalChargeSummarySliverGrid extends StatelessWidget {
   /// rolls over correctly across month and year boundaries and respects the
   /// local time zone rather than simply adding 24 hours in UTC.
   ///
-  /// Used as the cutoff when scoping the summary cards to the slots remaining
+  /// Used as the cutoff when scoping the window cards to the slots remaining
   /// today, keeping only those whose `validFrom` and `validTo` fall on or
   /// before this instant. The returned value is local time, but the
   /// comparisons are unaffected by that since [DateTime.compareTo] compares the

@@ -8,8 +8,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../common/functions.dart';
 import '../forecast/forecast_service.dart';
 import 'historical_charge_chart_card.dart';
-import 'historical_charge_sliver_main_axis_group.dart';
-import 'historical_charge_summary_sliver_grid.dart';
+import 'historical_charge_todays_summary_card.dart';
+import 'historical_charge_window_sliver_grid.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -28,21 +28,25 @@ class _HomeScreenState extends State<HomeScreen> {
   ///
   /// Resolved once in [initState] from the persisted `color_stops` preference
   /// (falling back to a built-in default) and handed down to the summary cards
-  /// and list tiles so they color their prices with the same mapping the chart
-  /// uses, rather than each small widget performing its own async read. Held as
-  /// a [Future] so the content can wait on the asynchronous read, exactly as the
-  /// chart does.
+  /// so they color their prices with the same mapping the chart uses, rather
+  /// than each small widget performing its own async read. Held as a [Future]
+  /// so the content can wait on the asynchronous read, exactly as the chart
+  /// does.
   late final Future<List<(Color, double)>> _colorStops;
 
   /// The confirmed unit rates, fetched once in [initState].
   ///
-  /// Loads the next 96 half-hour slots (two days) for the configured import
-  /// product and tariff from the Octopus Energy API, starting at the current
-  /// instant. Sorted ascending by `validFrom` in [build] and passed down to the
-  /// summary cards, chart and list, and used as the point the forecast
-  /// continues from. Held as a [Future] so the screen can show a spinner until
-  /// the asynchronous fetch completes.
-  late final Future<PaginatedHistoricalChargeList> _historicalCharges;
+  /// Loads every half-hour slot for the configured import product and tariff
+  /// from the Octopus Energy API spanning yesterday's local midnight through
+  /// two days ahead of today's — one request wide enough to serve every
+  /// consumer on this screen: [HistoricalChargeTodaysSummaryCard] needs the
+  /// full yesterday-and-today calendar days (with no partial-day window),
+  /// while the Current/Next/Best/Avoid cards, the chart and the forecast
+  /// continuation point only want the slots from now onward, derived in
+  /// [build] as `upcomingHistoricalCharges`. Sorted ascending by `validFrom`
+  /// in [build]. Held as a [Future] so the screen can show a spinner until the
+  /// asynchronous fetch completes.
+  late final Future<List<HistoricalCharge>> _historicalCharges;
 
   /// The shared preferences store, read once from the provider in [initState].
   ///
@@ -51,11 +55,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// The forecast charges, built once the forecast service is ready.
   ///
-  /// Fetched here and passed down to both the chart and the list, so the two
-  /// share a single forecast rather than each fetching their own. Null until the
-  /// forecast service is ready and the confirmed prices have loaded, so those
-  /// views render the confirmed prices on their own until it completes; guarded
-  /// in [build] so it is built only once.
+  /// Fetched here and passed down to the chart. Null until the forecast
+  /// service is ready and the confirmed prices have loaded, so the chart
+  /// renders the confirmed prices on their own until it completes; guarded in
+  /// [build] so it is built only once.
   Future<List<ForecastCharge>>? _forecastCharges;
 
   @override
@@ -65,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return FutureBuilder(
       future: _historicalCharges,
       builder: (context, snapshot) {
-        if (snapshot.data?.results case final historicalCharges?) {
+        if (snapshot.data case final historicalCharges?) {
           historicalCharges.sort(
             (a, b) {
               if (a.validFrom case final a?) {
@@ -78,6 +81,10 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
 
+          final upcomingHistoricalCharges = _getUpcomingHistoricalCharges(
+            historicalCharges,
+          );
+
           // The forecast service is null until the lookup table it composes has
           // loaded at start-up, flipping to ready when the load completes. Kick
           // off the forecast the first time it is ready, now the confirmed prices
@@ -85,14 +92,14 @@ class _HomeScreenState extends State<HomeScreen> {
           if (context.watch<ForecastService?>() case final forecastService?) {
             _forecastCharges ??= _getForecastCharges(
               forecastService,
-              historicalCharges,
+              upcomingHistoricalCharges,
             );
           }
 
           // Wait for the color stops before showing the content so the summary
-          // cards and list tiles render once with their prices already colored,
-          // using the same mapping the chart does, rather than redrawing when
-          // the asynchronous preferences read completes.
+          // cards render once with their prices already colored, using the same
+          // mapping the chart does, rather than redrawing when the asynchronous
+          // preferences read completes.
           return FutureBuilder(
             future: _colorStops,
             builder: (context, snapshot) {
@@ -103,41 +110,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     slivers: [
                       SliverPadding(
                         padding: const EdgeInsets.all(8.0),
-                        sliver: HistoricalChargeSummarySliverGrid(
+                        sliver: HistoricalChargeWindowSliverGrid(
                           colorStops: colorStops,
-                          historicalCharges: historicalCharges,
+                          historicalCharges: upcomingHistoricalCharges,
                         ),
                       ),
                       FutureBuilder(
                         future: _forecastCharges,
                         builder: (context, snapshot) {
                           // Wait for the forecast to resolve before showing the
-                          // chart and list, so they each render once with the
-                          // full data rather than redrawing when the forecast
-                          // arrives, and so only one spinner shows while both
-                          // wait on the same future.
+                          // chart, so it renders once with the full data rather
+                          // than redrawing when the forecast arrives.
                           if (snapshot.data case final forecastCharges?) {
-                            return SliverMainAxisGroup(
-                              slivers: [
-                                SliverPadding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  sliver: SliverToBoxAdapter(
-                                    child: HistoricalChargeChartCard(
-                                      colorStops: colorStops,
-                                      forecastCharges: forecastCharges,
-                                      historicalCharges: historicalCharges,
-                                    ),
-                                  ),
+                            return SliverPadding(
+                              padding: const EdgeInsets.all(8.0),
+                              sliver: SliverToBoxAdapter(
+                                child: HistoricalChargeChartCard(
+                                  colorStops: colorStops,
+                                  forecastCharges: forecastCharges,
+                                  historicalCharges: upcomingHistoricalCharges,
                                 ),
-                                SliverPadding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  sliver: HistoricalChargeSliverMainAxisGroup(
-                                    colorStops: colorStops,
-                                    forecastCharges: forecastCharges,
-                                    historicalCharges: historicalCharges,
-                                  ),
-                                ),
-                              ],
+                              ),
                             );
                           }
 
@@ -150,6 +143,15 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           );
                         },
+                      ),
+                      SliverPadding(
+                        padding: const EdgeInsets.all(8.0),
+                        sliver: SliverToBoxAdapter(
+                          child: HistoricalChargeTodaysSummaryCard(
+                            colorStops: colorStops,
+                            historicalCharges: historicalCharges,
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -179,6 +181,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
     _colorStops = getColorStops(_preferences);
 
+    // Both boundaries are built from today's local calendar day components
+    // (year/month/day) rather than adding or subtracting a fixed 24-hour
+    // Duration from `now`, so a daylight saving transition can't shift either
+    // boundary onto the wrong calendar day.
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final yesterday = DateTime(today.year, today.month, today.day - 1);
+    final dayAfterTomorrow = DateTime(today.year, today.month, today.day + 2);
+
     _historicalCharges = (
       _preferences.getString('import_product_code'),
       _preferences.getString('import_tariff_code'),
@@ -187,10 +198,19 @@ class _HomeScreenState extends State<HomeScreen> {
         return client.products.listElectricityTariffStandardUnitRates(
           value.$1!,
           value.$2!,
+          // Three full calendar days of half-hour slots (yesterday, today and
+          // tomorrow) is 144, plus a small buffer so a daylight saving
+          // fall-back day in the range — 25 hours, i.e. two extra half-hour
+          // slots — doesn't get truncated by an exact page size.
           page: 1,
-          pageSize: 96,
-          periodFrom: DateTime.now().toUtc(),
+          pageSize: 150,
+          periodFrom: yesterday.toUtc(),
+          periodTo: dayAfterTomorrow.toUtc(),
         );
+      },
+    ).then(
+      (value) {
+        return value.results;
       },
     );
   }
@@ -238,5 +258,26 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (_) {
       return const [];
     }
+  }
+
+  /// Returns the charges from [historicalCharges] that haven't finished yet.
+  ///
+  /// [_historicalCharges] spans yesterday through two days ahead so
+  /// [HistoricalChargeTodaysSummaryCard] can see the full calendar day, but
+  /// the Current/Next/Best/Avoid cards and the chart still only want the
+  /// slots that haven't finished yet — filtering here, once, keeps their
+  /// existing 'first slot is always Current' and 'anchor the chart on now'
+  /// behavior unchanged, rather than teaching each of them to filter out the
+  /// past themselves.
+  List<HistoricalCharge> _getUpcomingHistoricalCharges(
+    List<HistoricalCharge> historicalCharges,
+  ) {
+    final now = DateTime.now();
+
+    return historicalCharges.where(
+      (historicalCharge) {
+        return historicalCharge.validTo?.isAfter(now) == true;
+      },
+    ).toList();
   }
 }
