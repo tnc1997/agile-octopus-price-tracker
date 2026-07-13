@@ -9,7 +9,7 @@ import '../common/functions.dart';
 import '../forecast/forecast_service.dart';
 import 'historical_charge_chart_card.dart';
 import 'historical_charge_todays_summary_card.dart';
-import 'historical_charge_window_sliver_grid.dart';
+import 'historical_charge_window_wrap.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({
@@ -110,9 +110,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     slivers: [
                       SliverPadding(
                         padding: const EdgeInsets.all(8.0),
-                        sliver: HistoricalChargeWindowSliverGrid(
-                          colorStops: colorStops,
-                          historicalCharges: upcomingHistoricalCharges,
+                        sliver: SliverToBoxAdapter(
+                          child: HistoricalChargeWindowWrap(
+                            colorStops: colorStops,
+                            historicalCharges: upcomingHistoricalCharges,
+                          ),
                         ),
                       ),
                       FutureBuilder(

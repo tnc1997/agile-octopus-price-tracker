@@ -1,0 +1,193 @@
+import 'package:collection/collection.dart';
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:octopus_energy_api_client/v1.dart';
+
+import '../common/functions.dart';
+import 'historical_charge_window_card.dart';
+
+class HistoricalChargeWindowWrap extends StatelessWidget {
+  static const _spacing = 16.0;
+
+  const HistoricalChargeWindowWrap({
+    super.key,
+    required this.colorStops,
+    required this.historicalCharges,
+  });
+
+  final List<(Color, double)> colorStops;
+
+  final List<HistoricalCharge> historicalCharges;
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    // The 'Best' and 'Avoid' cards look only at the slots remaining today —
+    // from now to midnight — so they never recommend or warn about a period
+    // that has already passed or falls on a later day. The 'Current' and
+    // 'Next' cards, in contrast, always come from the first two slots and so
+    // keep reading from the full list (e.g. 'Next' rolls into tomorrow's first
+    // slot late in the day).
+    final remaining = _getHistoricalChargesEndingOn(
+      historicalCharges,
+      _getTomorrow(),
+    );
+
+    final min = findCheapestWindow(
+      remaining,
+      const Duration(
+        hours: 2,
+      ),
+    );
+
+    final max = maxBy(
+      remaining,
+      (historicalCharge) {
+        return historicalCharge.valueIncVat;
+      },
+    );
+
+    final crossAxisCount = MediaQuery.of(context).size.width > 768 ? 4 : 2;
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Each card is given a fixed width (so it still lands in a
+        // `crossAxisCount`-wide grid) but no fixed height, so a `Wrap` lets
+        // it size to whatever height its own label, sublabel and price
+        // text need, rather than the whole row being forced into a height
+        // derived from an aspect ratio. The combined width of the gaps
+        // between columns — there are `crossAxisCount - 1` gaps between
+        // `crossAxisCount` columns, each `_spacing` wide.
+        final totalSpacing = _spacing * (crossAxisCount - 1);
+
+        // The width left for cards once the gaps between columns are
+        // subtracted.
+        final availableWidth = constraints.maxWidth - totalSpacing;
+
+        // Each card's share of the available width, split evenly across the
+        // columns.
+        final itemWidth = availableWidth / crossAxisCount;
+
+        return Wrap(
+          spacing: _spacing,
+          runSpacing: _spacing,
+          children: [
+            if (historicalCharges.isNotEmpty)
+              SizedBox(
+                width: itemWidth,
+                child: HistoricalChargeWindowCard(
+                  colorStops: colorStops,
+                  label: 'Current',
+                  sublabel: '${DateFormat.Hm().format(
+                    historicalCharges[0].validFrom!.toLocal(),
+                  )} - ${DateFormat.Hm().format(
+                    historicalCharges[0].validTo!.toLocal(),
+                  )}',
+                  value: historicalCharges[0].valueIncVat,
+                ),
+              ),
+            if (historicalCharges.length > 1)
+              SizedBox(
+                width: itemWidth,
+                child: HistoricalChargeWindowCard(
+                  colorStops: colorStops,
+                  label: 'Next',
+                  sublabel: '${DateFormat.Hm().format(
+                    historicalCharges[1].validFrom!.toLocal(),
+                  )} - ${DateFormat.Hm().format(
+                    historicalCharges[1].validTo!.toLocal(),
+                  )}',
+                  value: historicalCharges[1].valueIncVat,
+                ),
+              ),
+            if (min != null)
+              SizedBox(
+                width: itemWidth,
+                child: HistoricalChargeWindowCard(
+                  colorStops: colorStops,
+                  label: 'Best',
+                  prefix: 'avg',
+                  sublabel: '${DateFormat.Hm().format(
+                    min.$1.first.validFrom!.toLocal(),
+                  )} - ${DateFormat.Hm().format(
+                    min.$1.last.validTo!.toLocal(),
+                  )}',
+                  value: min.$2,
+                ),
+              ),
+            if (max != null)
+              SizedBox(
+                width: itemWidth,
+                child: HistoricalChargeWindowCard(
+                  colorStops: colorStops,
+                  label: 'Avoid',
+                  sublabel: '${DateFormat.Hm().format(
+                    max.validFrom!.toLocal(),
+                  )} - ${DateFormat.Hm().format(
+                    max.validTo!.toLocal(),
+                  )}',
+                  value: max.valueIncVat,
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// Returns the charges from [historicalCharges] that are valid up to and
+  /// including [end].
+  ///
+  /// A charge is included only if both its [HistoricalCharge.validFrom] and
+  /// [HistoricalCharge.validTo] are non-null and fall on or before [end] —
+  /// charges that start after [end], extend beyond it, or have either bound
+  /// missing are excluded. The comparison is inclusive, so a charge whose
+  /// [HistoricalCharge.validTo] is exactly equal to [end] is included.
+  ///
+  /// The returned list preserves the relative order of [historicalCharges]
+  /// and does not mutate it.
+  List<HistoricalCharge> _getHistoricalChargesEndingOn(
+    List<HistoricalCharge> historicalCharges,
+    DateTime end,
+  ) {
+    final result = <HistoricalCharge>[];
+
+    for (final historicalCharge in historicalCharges) {
+      if (historicalCharge.validFrom case final validFrom?) {
+        if (validFrom.compareTo(end) <= 0) {
+          if (historicalCharge.validTo case final validTo?) {
+            if (validTo.compareTo(end) <= 0) {
+              result.add(historicalCharge);
+            }
+          }
+        }
+      }
+    }
+
+    return result;
+  }
+
+  /// Returns tomorrow's date, normalized to midnight local time.
+  ///
+  /// Adds a single day to the current local [DateTime.now] and then discards
+  /// the time-of-day components by reconstructing a [DateTime] from just the
+  /// year, month, and day. Because the day is added before truncation, this
+  /// rolls over correctly across month and year boundaries and respects the
+  /// local time zone rather than simply adding 24 hours in UTC.
+  ///
+  /// Used as the cutoff when scoping the window cards to the slots remaining
+  /// today, keeping only those whose `validFrom` and `validTo` fall on or
+  /// before this instant. The returned value is local time, but the
+  /// comparisons are unaffected by that since [DateTime.compareTo] compares the
+  /// underlying instant regardless of each operand's time zone.
+  DateTime _getTomorrow() {
+    final now = DateTime.now().add(
+      const Duration(
+        days: 1,
+      ),
+    );
+
+    return DateTime(now.year, now.month, now.day);
+  }
+}
