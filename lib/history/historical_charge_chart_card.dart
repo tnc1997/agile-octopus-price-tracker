@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 
+import '../common/chart_legend_wrap.dart';
 import 'historical_charge_chart.dart';
 
 class HistoricalChargeChartCard extends StatelessWidget {
@@ -27,9 +28,22 @@ class HistoricalChargeChartCard extends StatelessWidget {
       margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: HistoricalChargeChart(
-          colorStops: colorStops,
-          historicalCharges: historicalCharges,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(
+                bottom: 8.0,
+              ),
+              child: ChartLegendWrap(
+                colorStops: colorStops,
+              ),
+            ),
+            HistoricalChargeChart(
+              colorStops: colorStops,
+              historicalCharges: historicalCharges,
+            ),
+          ],
         ),
       ),
     );
