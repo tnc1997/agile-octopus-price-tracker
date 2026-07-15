@@ -37,6 +37,7 @@ class HistoricalChargeChartCard extends StatelessWidget {
               child: ChartLegendWrap(
                 colorStops: colorStops,
                 forecastCharges: forecastCharges,
+                historicalCharges: historicalCharges,
               ),
             ),
             HistoricalChargeChart(
