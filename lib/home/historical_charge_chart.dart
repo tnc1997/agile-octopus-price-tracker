@@ -92,9 +92,6 @@ class _HistoricalChargeChartState extends State<HistoricalChargeChart> {
         },
       ),
       primaryYAxis: NumericAxis(
-        title: AxisTitle(
-          text: 'Price (p/kWh)',
-        ),
         numberFormat: NumberFormat('0.00'),
         minimum: yMinimum,
         maximum: yMaximum,
