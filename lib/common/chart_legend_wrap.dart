@@ -94,7 +94,7 @@ class ChartLegendWrap extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           spacing: 8.0,
           children: [
-            if (true)
+            if (hasNegativePrice)
               _ChartLegendColorSwatchRow(
                 // Any negative value resolves to the same color
                 // `calculatePriceColor` draws every negative price in on the
