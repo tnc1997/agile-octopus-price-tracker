@@ -26,133 +26,129 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
   Widget build(
     BuildContext context,
   ) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        spacing: 16.0,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Text('< 0.00p/kWh'),
-              ),
-              ColorIndicator(
-                onSelect: () async {
-                  final negativeColor = await showColorPickerDialog(
-                    context,
-                    _negativeColor,
-                    pickersEnabled: {
-                      ColorPickerType.both: false,
-                      ColorPickerType.primary: false,
-                      ColorPickerType.accent: false,
-                      ColorPickerType.bw: false,
-                      ColorPickerType.custom: false,
-                      ColorPickerType.wheel: true,
-                    },
-                  );
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      spacing: 16.0,
+      children: [
+        Row(
+          children: [
+            Expanded(
+              child: Text('< 0.00p/kWh'),
+            ),
+            ColorIndicator(
+              onSelect: () async {
+                final negativeColor = await showColorPickerDialog(
+                  context,
+                  _negativeColor,
+                  pickersEnabled: {
+                    ColorPickerType.both: false,
+                    ColorPickerType.primary: false,
+                    ColorPickerType.accent: false,
+                    ColorPickerType.bw: false,
+                    ColorPickerType.custom: false,
+                    ColorPickerType.wheel: true,
+                  },
+                );
 
-                  setState(() {
-                    _negativeColor = negativeColor;
-                  });
-                },
-                color: _negativeColor,
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Text('10.00p/kWh'),
-              ),
-              ColorIndicator(
-                onSelect: () async {
-                  final lowColor = await showColorPickerDialog(
-                    context,
-                    _lowColor,
-                    pickersEnabled: {
-                      ColorPickerType.both: false,
-                      ColorPickerType.primary: false,
-                      ColorPickerType.accent: false,
-                      ColorPickerType.bw: false,
-                      ColorPickerType.custom: false,
-                      ColorPickerType.wheel: true,
-                    },
-                  );
+                setState(() {
+                  _negativeColor = negativeColor;
+                });
+              },
+              color: _negativeColor,
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Text('10.00p/kWh'),
+            ),
+            ColorIndicator(
+              onSelect: () async {
+                final lowColor = await showColorPickerDialog(
+                  context,
+                  _lowColor,
+                  pickersEnabled: {
+                    ColorPickerType.both: false,
+                    ColorPickerType.primary: false,
+                    ColorPickerType.accent: false,
+                    ColorPickerType.bw: false,
+                    ColorPickerType.custom: false,
+                    ColorPickerType.wheel: true,
+                  },
+                );
 
-                  setState(() {
-                    _lowColor = lowColor;
-                  });
-                },
-                color: _lowColor,
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Text('20.00p/kWh'),
-              ),
-              ColorIndicator(
-                onSelect: () async {
-                  final mediumColor = await showColorPickerDialog(
-                    context,
-                    _mediumColor,
-                    pickersEnabled: {
-                      ColorPickerType.both: false,
-                      ColorPickerType.primary: false,
-                      ColorPickerType.accent: false,
-                      ColorPickerType.bw: false,
-                      ColorPickerType.custom: false,
-                      ColorPickerType.wheel: true,
-                    },
-                  );
+                setState(() {
+                  _lowColor = lowColor;
+                });
+              },
+              color: _lowColor,
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Text('20.00p/kWh'),
+            ),
+            ColorIndicator(
+              onSelect: () async {
+                final mediumColor = await showColorPickerDialog(
+                  context,
+                  _mediumColor,
+                  pickersEnabled: {
+                    ColorPickerType.both: false,
+                    ColorPickerType.primary: false,
+                    ColorPickerType.accent: false,
+                    ColorPickerType.bw: false,
+                    ColorPickerType.custom: false,
+                    ColorPickerType.wheel: true,
+                  },
+                );
 
-                  setState(() {
-                    _mediumColor = mediumColor;
-                  });
-                },
-                color: _mediumColor,
-              ),
-            ],
-          ),
-          Row(
-            children: [
-              Expanded(
-                child: Text('30.00p/kWh'),
-              ),
-              ColorIndicator(
-                onSelect: () async {
-                  final highColor = await showColorPickerDialog(
-                    context,
-                    _highColor,
-                    pickersEnabled: {
-                      ColorPickerType.both: false,
-                      ColorPickerType.primary: false,
-                      ColorPickerType.accent: false,
-                      ColorPickerType.bw: false,
-                      ColorPickerType.custom: false,
-                      ColorPickerType.wheel: true,
-                    },
-                  );
+                setState(() {
+                  _mediumColor = mediumColor;
+                });
+              },
+              color: _mediumColor,
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            Expanded(
+              child: Text('30.00p/kWh'),
+            ),
+            ColorIndicator(
+              onSelect: () async {
+                final highColor = await showColorPickerDialog(
+                  context,
+                  _highColor,
+                  pickersEnabled: {
+                    ColorPickerType.both: false,
+                    ColorPickerType.primary: false,
+                    ColorPickerType.accent: false,
+                    ColorPickerType.bw: false,
+                    ColorPickerType.custom: false,
+                    ColorPickerType.wheel: true,
+                  },
+                );
 
-                  setState(() {
-                    _highColor = highColor;
-                  });
-                },
-                color: _highColor,
-              ),
-            ],
-          ),
-          _SaveButton(
-            negativeColor: _negativeColor,
-            lowColor: _lowColor,
-            mediumColor: _mediumColor,
-            highColor: _highColor,
-          ),
-        ],
-      ),
+                setState(() {
+                  _highColor = highColor;
+                });
+              },
+              color: _highColor,
+            ),
+          ],
+        ),
+        _SaveButton(
+          negativeColor: _negativeColor,
+          lowColor: _lowColor,
+          mediumColor: _mediumColor,
+          highColor: _highColor,
+        ),
+      ],
     );
   }
 
