@@ -21,7 +21,7 @@ class ColorStopsFormCard extends StatelessWidget {
           spacing: 16.0,
           children: [
             SettingsCardHeader(
-              subtitle: 'The colour thresholds used for the charts and cards',
+              subtitle: 'The colour blends smoothly between these prices',
               title: 'Price colour thresholds',
             ),
             ColorStopsForm(),

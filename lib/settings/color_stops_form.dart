@@ -27,6 +27,14 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
   /// picks a new one.
   static const _defaultNegativeColor = Color(0xff00ffff);
 
+  /// The negative-price stop's displayed threshold, in p/kWh, when no
+  /// `color_stops` preference has ever been saved.
+  ///
+  /// Seeds [_negativePriceController]'s initial text. Unlike the other
+  /// three default prices, this is never compared against a saved value or
+  /// written back to preferences — see [_negativePriceController] for why.
+  static const _defaultNegativePrice = 0.00;
+
   /// The "low" price stop's color when no `color_stops` preference has ever
   /// been saved.
   ///
@@ -71,6 +79,20 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
   static const _defaultHighPrice = 30.00;
 
   final _formKey = GlobalKey<FormState>();
+
+  /// The controller holding the negative-price stop's displayed threshold
+  /// text.
+  ///
+  /// Unlike the other three controllers, this never changes and is never
+  /// read back — the negative stop's price is always saved as the fixed
+  /// `-1.00` sentinel (see [_SaveButton._save]), not a user-editable value.
+  /// It exists only so the negative row can render through
+  /// [_ColorStopPriceFormField] like the other three, with `enabled: false`,
+  /// for a visually consistent disabled field showing `0.00`. Disposed in
+  /// [dispose].
+  final _negativePriceController = TextEditingController(
+    text: _defaultNegativePrice.toStringAsFixed(2),
+  );
 
   /// The controller holding the "low" price stop's current, unparsed
   /// threshold text.
@@ -205,8 +227,13 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
           Row(
             spacing: 16.0,
             children: [
-              const Expanded(
-                child: Text('< 0.00p/kWh'),
+              Expanded(
+                child: _ColorStopPriceFormField(
+                  label: const Text('Negative'),
+                  prefix: const Text('Below '),
+                  controller: _negativePriceController,
+                  enabled: false,
+                ),
               ),
               _ColorStopColorColorIndicator(
                 color: _negativeColor,
@@ -223,6 +250,7 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
             children: [
               Expanded(
                 child: _ColorStopPriceFormField(
+                  label: const Text('Cheap'),
                   controller: _lowPriceController,
                 ),
               ),
@@ -241,6 +269,7 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
             children: [
               Expanded(
                 child: _ColorStopPriceFormField(
+                  label: const Text('Moderate'),
                   controller: _mediumPriceController,
                 ),
               ),
@@ -259,6 +288,8 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
             children: [
               Expanded(
                 child: _ColorStopPriceFormField(
+                  label: const Text('Expensive'),
+                  prefix: const Text('Above '),
                   controller: _highPriceController,
                 ),
               ),
@@ -307,6 +338,7 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
 
   @override
   void dispose() {
+    _negativePriceController.dispose();
     _lowPriceController.dispose();
     _mediumPriceController.dispose();
     _highPriceController.dispose();
@@ -453,6 +485,9 @@ class _ColorStopColorColorIndicator extends StatelessWidget {
 class _ColorStopPriceFormField extends StatelessWidget {
   const _ColorStopPriceFormField({
     required this.controller,
+    this.enabled = true,
+    this.label,
+    this.prefix,
   });
 
   /// The controller that holds this field's current, unparsed price text.
@@ -462,16 +497,36 @@ class _ColorStopPriceFormField extends StatelessWidget {
   /// [_SaveButton] when the form is saved.
   final TextEditingController controller;
 
+  /// Whether this field can be edited.
+  ///
+  /// The negative-price stop passes `false` — it represents "any negative
+  /// unit rate" as a fixed category rather than a movable threshold (see the
+  /// class doc comment above), so its field is rendered read-only to match
+  /// the other three stops' style without letting the user edit it.
+  final bool enabled;
+
+  /// The color stop's name, shown as this field's label, e.g. `Text('Cheap')`
+  /// or `Text('Expensive')`.
+  final Widget? label;
+
+  /// The threshold value's relationship to the color stop, shown immediately
+  /// before the entered number, e.g. `Text('Up to ')` or `Text('Above ')`.
+  ///
+  /// Paired with [label] so the field reads as an unambiguous range (e.g.
+  /// "Cheap: Up to 10.00p/kWh") rather than a bare number.
+  final Widget? prefix;
+
   @override
   Widget build(
     BuildContext context,
   ) {
     return TextFormField(
       controller: controller,
-      decoration: const InputDecoration(
-        label: Text('Price'),
-        suffix: Text('p/kWh'),
-        border: OutlineInputBorder(),
+      decoration: InputDecoration(
+        label: label,
+        prefix: prefix,
+        suffix: const Text('p/kWh'),
+        border: const OutlineInputBorder(),
       ),
       keyboardType: const TextInputType.numberWithOptions(
         decimal: true,
@@ -504,6 +559,7 @@ class _ColorStopPriceFormField extends StatelessWidget {
           return oldValue;
         }),
       ],
+      enabled: enabled,
     );
   }
 }
