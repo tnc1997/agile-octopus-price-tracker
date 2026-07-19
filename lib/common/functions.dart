@@ -214,9 +214,23 @@ Future<List<(Color, double)>> getColorStops(
   }
 
   return const [
-    (Color(0xff2196f3), -1.00),
+    (Color(0xff00ffff), -1.00),
     (Color(0xff00ff00), 10.00),
     (Color(0xffffff00), 20.00),
     (Color(0xffff0000), 30.00),
   ];
+}
+
+/// Gets the tariff comparison rate, in pence per kWh, that the today's
+/// summary card's tariff comparison sentence compares today's average
+/// against.
+///
+/// Reads the persisted `tariff_comparison_rate` preference, which is always
+/// set by the time this is called — the welcome screen requires it, the same
+/// as `grid_supply_point_group_id` and `import_product_code` (see the
+/// redirect in `lib/main.dart`).
+Future<double> getTariffComparisonRate(
+  SharedPreferencesAsync preferences,
+) async {
+  return await preferences.getDouble('tariff_comparison_rate') ?? 27.00;
 }

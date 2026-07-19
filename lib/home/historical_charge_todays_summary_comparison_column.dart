@@ -6,7 +6,7 @@ import 'package:octopus_energy_api_client/v1.dart';
 import 'historical_charge_todays_summary_comparison_text.dart';
 
 /// The bottom comparison section of `HistoricalChargeTodaysSummaryCard`: the
-/// divider, the 'hours below' sentence, and the yesterday and fixed-tariff
+/// divider, the 'hours below' sentence, and the yesterday and tariff
 /// comparison sentences.
 ///
 /// The yesterday sentence is omitted when [yesterdaysCharges] is empty (the
@@ -18,15 +18,21 @@ class HistoricalChargeTodaysSummaryComparisonColumn extends StatelessWidget {
   /// against.
   static const _belowThreshold = 15.00;
 
-  /// The flat-rate tariff, in pence per kilowatt hour, today's average is
-  /// compared against.
-  static const _comparisonTariff = 27.00;
-
   const HistoricalChargeTodaysSummaryComparisonColumn({
     super.key,
+    required this.tariffComparisonRate,
     required this.todaysCharges,
     required this.yesterdaysCharges,
   });
+
+  /// The flat-rate tariff, in pence per kilowatt hour, today's average is
+  /// compared against.
+  ///
+  /// Sourced from the user-configurable `tariff_comparison_rate`
+  /// preference (see [getTariffComparisonRate] in `lib/common/functions.dart`),
+  /// rather than a hard-coded constant, so this sentence reflects the user's
+  /// actual alternative tariff rate.
+  final double tariffComparisonRate;
 
   /// Today's charges, used for the 'hours below' sentence and today's
   /// average.
@@ -92,12 +98,12 @@ class HistoricalChargeTodaysSummaryComparisonColumn extends StatelessWidget {
               percentage: percentage,
               suffix: ' than yesterday',
             ),
-        if (_describeComparison(todaysAverage, _comparisonTariff)
+        if (_describeComparison(todaysAverage, tariffComparisonRate)
             case final percentage?)
           HistoricalChargeTodaysSummaryComparisonText(
             percentage: percentage,
             suffix:
-                ' than a ${NumberFormat('0.##').format(_comparisonTariff)}p/kWh tariff',
+                ' than a ${NumberFormat('0.##').format(tariffComparisonRate)}p/kWh tariff',
           ),
       ],
     );

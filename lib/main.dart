@@ -104,6 +104,10 @@ class MyApp extends StatelessWidget {
             return WelcomeRoute().location;
           }
 
+          if (!await preferences.containsKey('tariff_comparison_rate')) {
+            return WelcomeRoute().location;
+          }
+
           return null;
         },
       ),

@@ -52,6 +52,7 @@ class ImportProductCodeFormField extends StatelessWidget {
       onChanged: onChanged,
       decoration: const InputDecoration(
         label: Text('Tariff'),
+        helper: Text('The version applied to your account'),
         border: OutlineInputBorder(),
       ),
       validator: (value) {

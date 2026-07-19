@@ -77,6 +77,7 @@ class _GridSupplyPointGroupIdFormFieldState
 
         if (items != null) {
           return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             spacing: 8.0,
             children: [
               Expanded(
@@ -86,6 +87,7 @@ class _GridSupplyPointGroupIdFormFieldState
                   onChanged: widget.onChanged,
                   decoration: const InputDecoration(
                     label: Text('Region'),
+                    helper: Text('The area for which prices are shown'),
                     border: OutlineInputBorder(),
                   ),
                   validator: (value) {
@@ -97,28 +99,43 @@ class _GridSupplyPointGroupIdFormFieldState
                   },
                 ),
               ),
-              TextButton.icon(
-                onPressed: () async {
-                  final client = context.read<OctopusEnergyApiClient>();
-                  final messenger = ScaffoldMessenger.of(context);
-                  final nominatim = context.read<NominatimApiClient>();
+              Padding(
+                padding: const EdgeInsets.only(
+                  top: 8.0,
+                ),
+                child: TextButton.icon(
+                  onPressed: () async {
+                    final client = context.read<OctopusEnergyApiClient>();
+                    final messenger = ScaffoldMessenger.of(context);
+                    final nominatim = context.read<NominatimApiClient>();
 
-                  if (!await Geolocator.isLocationServiceEnabled()) {
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Please enable location services.'),
-                      ),
-                    );
+                    if (!await Geolocator.isLocationServiceEnabled()) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Please enable location services.'),
+                        ),
+                      );
 
-                    return;
-                  }
+                      return;
+                    }
 
-                  var permission = await Geolocator.checkPermission();
-
-                  if (permission == LocationPermission.denied) {
-                    permission = await Geolocator.requestPermission();
+                    var permission = await Geolocator.checkPermission();
 
                     if (permission == LocationPermission.denied) {
+                      permission = await Geolocator.requestPermission();
+
+                      if (permission == LocationPermission.denied) {
+                        messenger.showSnackBar(
+                          const SnackBar(
+                            content: Text('Please allow location permissions.'),
+                          ),
+                        );
+
+                        return;
+                      }
+                    }
+
+                    if (permission == LocationPermission.deniedForever) {
                       messenger.showSnackBar(
                         const SnackBar(
                           content: Text('Please allow location permissions.'),
@@ -127,81 +144,72 @@ class _GridSupplyPointGroupIdFormFieldState
 
                       return;
                     }
-                  }
 
-                  if (permission == LocationPermission.deniedForever) {
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Please allow location permissions.'),
-                      ),
-                    );
+                    final Position position;
 
-                    return;
-                  }
+                    try {
+                      position = await Geolocator.getCurrentPosition();
+                    } catch (e) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to get the location.'),
+                        ),
+                      );
 
-                  final Position position;
+                      return;
+                    }
 
-                  try {
-                    position = await Geolocator.getCurrentPosition();
-                  } catch (e) {
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Failed to get the location.'),
-                      ),
-                    );
+                    final String postcode;
 
-                    return;
-                  }
+                    try {
+                      final place = await nominatim.reverse(
+                        position.latitude,
+                        position.longitude,
+                      );
 
-                  final String postcode;
+                      postcode = place.address!['postcode']!;
+                    } catch (e) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to get the postcode.'),
+                        ),
+                      );
 
-                  try {
-                    final place = await nominatim.reverse(
-                      position.latitude,
-                      position.longitude,
-                    );
+                      return;
+                    }
 
-                    postcode = place.address!['postcode']!;
-                  } catch (e) {
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Failed to get the postcode.'),
-                      ),
-                    );
+                    final String groupId;
 
-                    return;
-                  }
+                    try {
+                      final list =
+                          await client.industry.listIndustryGridSupplyPoints(
+                        page: 1,
+                        postcode: postcode,
+                      );
 
-                  final String groupId;
+                      groupId = list.results.first.groupId;
+                    } catch (e) {
+                      messenger.showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to get the group identifier.'),
+                        ),
+                      );
 
-                  try {
-                    final list =
-                        await client.industry.listIndustryGridSupplyPoints(
-                      page: 1,
-                      postcode: postcode,
-                    );
+                      return;
+                    }
 
-                    groupId = list.results.first.groupId;
-                  } catch (e) {
-                    messenger.showSnackBar(
-                      const SnackBar(
-                        content: Text('Failed to get the group identifier.'),
-                      ),
-                    );
-
-                    return;
-                  }
-
-                  widget.onChanged(groupId);
-                },
-                icon: Icon(Icons.my_location),
-                label: Text('Detect'),
+                    widget.onChanged(groupId);
+                  },
+                  icon: Icon(Icons.my_location),
+                  label: Text('Detect'),
+                ),
               ),
             ],
           );
         }
 
         return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           spacing: 8.0,
           children: [
             Expanded(
@@ -210,14 +218,20 @@ class _GridSupplyPointGroupIdFormFieldState
                 onChanged: null,
                 decoration: const InputDecoration(
                   label: Text('Region'),
+                  helper: Text('The area for which prices are shown'),
                   border: OutlineInputBorder(),
                 ),
               ),
             ),
-            TextButton.icon(
-              onPressed: null,
-              icon: Icon(Icons.my_location),
-              label: Text('Detect'),
+            Padding(
+              padding: const EdgeInsets.only(
+                top: 8.0,
+              ),
+              child: TextButton.icon(
+                onPressed: null,
+                icon: Icon(Icons.my_location),
+                label: Text('Detect'),
+              ),
             ),
           ],
         );

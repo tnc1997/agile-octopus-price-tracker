@@ -8,6 +8,7 @@ import '../common/shell_route.dart';
 import '../main.dart';
 import 'grid_supply_point_group_id_form_field.dart';
 import 'import_product_code_form_field.dart';
+import 'tariff_comparison_rate_form_field.dart';
 
 class TariffForm extends StatefulWidget {
   const TariffForm({
@@ -42,6 +43,16 @@ class _TariffFormState extends State<TariffForm> {
   /// [ImportProductCodeFormField]'s `onChanged` callback instead.
   String? _importProductCode;
 
+  /// The controller holding the tariff comparison rate's current, unparsed
+  /// text.
+  ///
+  /// Starts out empty, overwritten with the persisted value once
+  /// [initState]'s preferences read completes, and edited directly by
+  /// [TariffComparisonRateFormField] as the user types. Read (and parsed) by
+  /// [_SaveButton] both to detect whether this section is dirty and, on
+  /// save, to persist the new rate. Disposed in [dispose].
+  final _tariffComparisonRateController = TextEditingController();
+
   /// The last-persisted grid supply point group identifier, i.e. the value
   /// currently written to the `grid_supply_point_group_id` preference.
   ///
@@ -59,6 +70,20 @@ class _TariffFormState extends State<TariffForm> {
   /// See [_savedGridSupplyPointGroupId] — this is the same mechanism,
   /// paired with [_importProductCode] instead.
   String? _savedImportProductCode;
+
+  /// The last-persisted tariff comparison rate, i.e. the value currently
+  /// written to the `tariff_comparison_rate` preference.
+  ///
+  /// Unlike the other two saved fields above, there is no plain "current"
+  /// counterpart field — the current, possibly-invalid or not-yet-parsed
+  /// value lives only as [_tariffComparisonRateController]'s text. Starts out
+  /// `null` until [initState]'s preferences read completes, exactly as
+  /// [_savedGridSupplyPointGroupId] and [_savedImportProductCode] do.
+  /// [_SaveButton] parses the controller's text and compares the result
+  /// against this field to decide whether the section is dirty, then
+  /// advances this field to the newly parsed value once a save succeeds (via
+  /// `onPersisted`).
+  double? _savedTariffComparisonRate;
 
   @override
   Widget build(
@@ -86,22 +111,37 @@ class _TariffFormState extends State<TariffForm> {
               });
             },
           ),
+          TariffComparisonRateFormField(
+            controller: _tariffComparisonRateController,
+          ),
           _SaveButton(
             formKey: _formKey,
             gridSupplyPointGroupId: _gridSupplyPointGroupId,
             importProductCode: _importProductCode,
+            tariffComparisonRateController: _tariffComparisonRateController,
             savedGridSupplyPointGroupId: _savedGridSupplyPointGroupId,
             savedImportProductCode: _savedImportProductCode,
+            savedTariffComparisonRate: _savedTariffComparisonRate,
             onPersisted: () {
               setState(() {
                 _savedGridSupplyPointGroupId = _gridSupplyPointGroupId;
                 _savedImportProductCode = _importProductCode;
+                _savedTariffComparisonRate = double.tryParse(
+                  _tariffComparisonRateController.text,
+                );
               });
             },
           ),
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _tariffComparisonRateController.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -112,13 +152,24 @@ class _TariffFormState extends State<TariffForm> {
 
     preferences.getString('grid_supply_point_group_id').then((value) {
       setState(() {
-        _gridSupplyPointGroupId = _savedGridSupplyPointGroupId = value;
+        _gridSupplyPointGroupId = value;
+        _savedGridSupplyPointGroupId = value;
       });
     });
 
     preferences.getString('import_product_code').then((value) {
       setState(() {
-        _importProductCode = _savedImportProductCode = value;
+        _importProductCode = value;
+        _savedImportProductCode = value;
+      });
+    });
+
+    preferences.getDouble('tariff_comparison_rate').then((value) {
+      setState(() {
+        if (value != null) {
+          _tariffComparisonRateController.text = value.toStringAsFixed(2);
+          _savedTariffComparisonRate = value;
+        }
       });
     });
   }
@@ -129,9 +180,11 @@ class _SaveButton extends StatelessWidget {
     required this.formKey,
     required this.gridSupplyPointGroupId,
     required this.importProductCode,
+    required this.tariffComparisonRateController,
+    required this.onPersisted,
     required this.savedGridSupplyPointGroupId,
     required this.savedImportProductCode,
-    required this.onPersisted,
+    required this.savedTariffComparisonRate,
   });
 
   final GlobalKey<FormState> formKey;
@@ -139,6 +192,12 @@ class _SaveButton extends StatelessWidget {
   final String? gridSupplyPointGroupId;
 
   final String? importProductCode;
+
+  final TextEditingController tariffComparisonRateController;
+
+  /// Invoked once the data has been successfully persisted, so the parent
+  /// can update its "last-saved" values and re-disable the Save button.
+  final VoidCallback onPersisted;
 
   /// The last-saved grid supply point group identifier, i.e. the value
   /// currently persisted to preferences.
@@ -154,20 +213,35 @@ class _SaveButton extends StatelessWidget {
   /// has unsaved changes.
   final String? savedImportProductCode;
 
-  /// Invoked once the data has been successfully persisted, so the parent
-  /// can update its "last-saved" values and re-disable the Save button.
-  final VoidCallback onPersisted;
+  /// The last-saved tariff comparison rate, i.e. the value currently
+  /// persisted to preferences.
+  ///
+  /// `null` until [_TariffFormState.initState]'s preferences read completes,
+  /// exactly as [savedGridSupplyPointGroupId] and [savedImportProductCode]
+  /// are. Compared against [tariffComparisonRateController]'s parsed value
+  /// to decide whether this form has unsaved changes.
+  final double? savedTariffComparisonRate;
 
   @override
   Widget build(
     BuildContext context,
   ) {
-    return FilledButton(
-      onPressed: gridSupplyPointGroupId != savedGridSupplyPointGroupId ||
-              importProductCode != savedImportProductCode
-          ? () => _save(context)
-          : null,
-      child: const Text('Save'),
+    return ListenableBuilder(
+      listenable: tariffComparisonRateController,
+      builder: (context, child) {
+        final tariffComparisonRate = double.tryParse(
+          tariffComparisonRateController.text,
+        );
+
+        return FilledButton(
+          onPressed: gridSupplyPointGroupId != savedGridSupplyPointGroupId ||
+                  importProductCode != savedImportProductCode ||
+                  tariffComparisonRate != savedTariffComparisonRate
+              ? () => _save(context)
+              : null,
+          child: const Text('Save'),
+        );
+      },
     );
   }
 
@@ -208,6 +282,21 @@ class _SaveButton extends StatelessWidget {
       messenger.showSnackBar(
         const SnackBar(
           content: Text('Failed to set the group identifier.'),
+        ),
+      );
+
+      return;
+    }
+
+    try {
+      await preferences.setDouble(
+        'tariff_comparison_rate',
+        double.parse(tariffComparisonRateController.text),
+      );
+    } catch (e) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Failed to set the tariff comparison rate.'),
         ),
       );
 
