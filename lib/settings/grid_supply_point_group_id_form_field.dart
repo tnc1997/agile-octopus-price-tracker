@@ -97,7 +97,7 @@ class _GridSupplyPointGroupIdFormFieldState
                   },
                 ),
               ),
-              IconButton(
+              TextButton.icon(
                 onPressed: () async {
                   final client = context.read<OctopusEnergyApiClient>();
                   final messenger = ScaffoldMessenger.of(context);
@@ -194,8 +194,8 @@ class _GridSupplyPointGroupIdFormFieldState
 
                   widget.onChanged(groupId);
                 },
-                tooltip: 'Location',
                 icon: Icon(Icons.my_location),
+                label: Text('Detect'),
               ),
             ],
           );
@@ -214,10 +214,10 @@ class _GridSupplyPointGroupIdFormFieldState
                 ),
               ),
             ),
-            IconButton(
+            TextButton.icon(
               onPressed: null,
-              tooltip: 'Location',
               icon: Icon(Icons.my_location),
+              label: Text('Detect'),
             ),
           ],
         );
