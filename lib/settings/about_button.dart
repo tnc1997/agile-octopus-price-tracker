@@ -11,7 +11,7 @@ class AboutButton extends StatelessWidget {
   Widget build(
     BuildContext context,
   ) {
-    return FilledButton(
+    return TextButton(
       onPressed: () {
         showAboutDialog(
           context: context,
