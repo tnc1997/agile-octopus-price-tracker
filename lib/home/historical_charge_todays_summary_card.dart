@@ -13,6 +13,7 @@ class HistoricalChargeTodaysSummaryCard extends StatelessWidget {
     super.key,
     required this.colorStops,
     required this.historicalCharges,
+    required this.tariffComparisonRate,
   });
 
   /// The color gradient stops used to color every rate on this card, so they
@@ -28,6 +29,11 @@ class HistoricalChargeTodaysSummaryCard extends StatelessWidget {
   /// at least yesterday through today. The yesterday comparison row is
   /// omitted when the list doesn't cover yesterday.
   final List<HistoricalCharge> historicalCharges;
+
+  /// The flat-rate tariff, in pence per kilowatt hour, that the tariff
+  /// comparison sentence compares today's average against. Passed straight
+  /// through to [HistoricalChargeTodaysSummaryComparisonColumn].
+  final double tariffComparisonRate;
 
   @override
   Widget build(
@@ -70,6 +76,7 @@ class HistoricalChargeTodaysSummaryCard extends StatelessWidget {
               ),
               const Divider(),
               HistoricalChargeTodaysSummaryComparisonColumn(
+                tariffComparisonRate: tariffComparisonRate,
                 todaysCharges: todaysCharges,
                 yesterdaysCharges: yesterdaysCharges,
               ),

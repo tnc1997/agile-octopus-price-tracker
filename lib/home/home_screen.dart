@@ -34,6 +34,15 @@ class _HomeScreenState extends State<HomeScreen> {
   /// does.
   late final Future<List<(Color, double)>> _colorStops;
 
+  /// The tariff comparison rate, in pence per kilowatt hour, used by
+  /// the today's summary card's tariff comparison sentence.
+  ///
+  /// Resolved once in [initState] from the persisted
+  /// `tariff_comparison_rate` preference, which is always set by the time
+  /// this screen is reachable (see the redirect in `lib/main.dart`),
+  /// analogous to [_colorStops].
+  late final Future<double> _tariffComparisonRate;
+
   /// The confirmed unit rates, fetched once in [initState].
   ///
   /// Loads every half-hour slot for the configured import product and tariff
@@ -101,9 +110,9 @@ class _HomeScreenState extends State<HomeScreen> {
           // mapping the chart does, rather than redrawing when the asynchronous
           // preferences read completes.
           return FutureBuilder(
-            future: _colorStops,
+            future: (_colorStops, _tariffComparisonRate).wait,
             builder: (context, snapshot) {
-              if (snapshot.data case final colorStops?) {
+              if (snapshot.data case final data?) {
                 return Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: CustomScrollView(
@@ -112,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         sliver: SliverToBoxAdapter(
                           child: HistoricalChargeWindowWrap(
-                            colorStops: colorStops,
+                            colorStops: data.$1,
                             historicalCharges: upcomingHistoricalCharges,
                           ),
                         ),
@@ -128,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.all(8.0),
                               sliver: SliverToBoxAdapter(
                                 child: HistoricalChargeChartCard(
-                                  colorStops: colorStops,
+                                  colorStops: data.$1,
                                   forecastCharges: forecastCharges,
                                   historicalCharges: upcomingHistoricalCharges,
                                 ),
@@ -150,8 +159,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         padding: const EdgeInsets.all(8.0),
                         sliver: SliverToBoxAdapter(
                           child: HistoricalChargeTodaysSummaryCard(
-                            colorStops: colorStops,
+                            colorStops: data.$1,
                             historicalCharges: historicalCharges,
+                            tariffComparisonRate: data.$2,
                           ),
                         ),
                       ),
@@ -182,6 +192,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _preferences = context.read<SharedPreferencesAsync>();
 
     _colorStops = getColorStops(_preferences);
+    _tariffComparisonRate = getTariffComparisonRate(_preferences);
 
     // Both boundaries are built from today's local calendar day components
     // (year/month/day) rather than adding or subtracting a fixed 24-hour
