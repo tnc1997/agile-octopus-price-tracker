@@ -9,10 +9,13 @@ import '../main.dart';
 class GridSupplyPointGroupIdFormField extends StatefulWidget {
   const GridSupplyPointGroupIdFormField({
     super.key,
-    required this.notifier,
+    required this.value,
+    required this.onChanged,
   });
 
-  final ValueNotifier<String?> notifier;
+  final String? value;
+
+  final void Function(String?) onChanged;
 
   @override
   State<GridSupplyPointGroupIdFormField> createState() {
@@ -77,27 +80,20 @@ class _GridSupplyPointGroupIdFormFieldState
             spacing: 8.0,
             children: [
               Expanded(
-                child: ValueListenableBuilder(
-                  valueListenable: widget.notifier,
-                  builder: (context, value, child) {
-                    return DropdownButtonFormField<String>(
-                      items: items,
-                      initialValue: value,
-                      onChanged: (value) {
-                        widget.notifier.value = value;
-                      },
-                      decoration: const InputDecoration(
-                        label: Text('Region'),
-                        border: OutlineInputBorder(),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please select your region.';
-                        }
+                child: DropdownButtonFormField<String>(
+                  items: items,
+                  initialValue: widget.value,
+                  onChanged: widget.onChanged,
+                  decoration: const InputDecoration(
+                    label: Text('Region'),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Please select your region.';
+                    }
 
-                        return null;
-                      },
-                    );
+                    return null;
                   },
                 ),
               ),
@@ -196,7 +192,7 @@ class _GridSupplyPointGroupIdFormFieldState
                     return;
                   }
 
-                  widget.notifier.value = groupId;
+                  widget.onChanged(groupId);
                 },
                 tooltip: 'Location',
                 icon: Icon(Icons.my_location),

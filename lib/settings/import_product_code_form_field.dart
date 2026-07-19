@@ -34,36 +34,32 @@ class ImportProductCodeFormField extends StatelessWidget {
 
   const ImportProductCodeFormField({
     super.key,
-    required this.notifier,
+    required this.value,
+    required this.onChanged,
   });
 
-  final ValueNotifier<String?> notifier;
+  final String? value;
+
+  final void Function(String?) onChanged;
 
   @override
   Widget build(
     BuildContext context,
   ) {
-    return ValueListenableBuilder(
-      valueListenable: notifier,
-      builder: (context, value, child) {
-        return DropdownButtonFormField<String>(
-          items: _items,
-          initialValue: value,
-          onChanged: (value) {
-            notifier.value = value;
-          },
-          decoration: const InputDecoration(
-            label: Text('Tariff'),
-            border: OutlineInputBorder(),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please select your tariff.';
-            }
+    return DropdownButtonFormField<String>(
+      items: _items,
+      initialValue: value,
+      onChanged: onChanged,
+      decoration: const InputDecoration(
+        label: Text('Tariff'),
+        border: OutlineInputBorder(),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return 'Please select your tariff.';
+        }
 
-            return null;
-          },
-        );
+        return null;
       },
     );
   }
