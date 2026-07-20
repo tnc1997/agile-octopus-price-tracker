@@ -21,7 +21,7 @@ class TodaysSummaryFormCard extends StatelessWidget {
           spacing: 16.0,
           children: [
             SettingsCardHeader(
-              subtitle: 'The settings for the today\'s summary card',
+              subtitle: 'The settings used for the today\'s summary',
               title: 'Today\'s summary',
             ),
             TodaysSummaryForm(),

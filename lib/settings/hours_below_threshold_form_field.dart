@@ -35,7 +35,7 @@ class HoursBelowThresholdFormField extends StatelessWidget {
       controller: controller,
       decoration: const InputDecoration(
         label: Text('Hours below threshold'),
-        helper: Text('The threshold used for the statistic'),
+        helper: Text('The threshold used to count hours below'),
         suffix: Text('p/kWh'),
         border: OutlineInputBorder(),
       ),
