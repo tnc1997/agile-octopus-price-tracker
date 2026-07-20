@@ -34,6 +34,16 @@ class _HomeScreenState extends State<HomeScreen> {
   /// does.
   late final Future<List<(Color, double)>> _colorStops;
 
+  /// The threshold, in pence per kilowatt hour, used by the today's summary
+  /// card's 'hours below' row.
+  ///
+  /// Resolved once in [initState] from the persisted
+  /// `hours_below_threshold` preference, analogous to
+  /// [_tariffComparisonRate]. Distinct from [_colorStops]: the two happen to
+  /// default to similar prices, but are independent preferences serving
+  /// different purposes.
+  late final Future<double> _hoursBelowThreshold;
+
   /// The tariff comparison rate, in pence per kilowatt hour, used by
   /// the today's summary card's tariff comparison sentence.
   ///
@@ -110,7 +120,11 @@ class _HomeScreenState extends State<HomeScreen> {
           // mapping the chart does, rather than redrawing when the asynchronous
           // preferences read completes.
           return FutureBuilder(
-            future: (_colorStops, _tariffComparisonRate).wait,
+            future: (
+              _colorStops,
+              _hoursBelowThreshold,
+              _tariffComparisonRate,
+            ).wait,
             builder: (context, snapshot) {
               if (snapshot.data case final data?) {
                 return Padding(
@@ -161,7 +175,8 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: HistoricalChargeTodaysSummaryCard(
                             colorStops: data.$1,
                             historicalCharges: historicalCharges,
-                            tariffComparisonRate: data.$2,
+                            hoursBelowThreshold: data.$2,
+                            tariffComparisonRate: data.$3,
                           ),
                         ),
                       ),
@@ -192,6 +207,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _preferences = context.read<SharedPreferencesAsync>();
 
     _colorStops = getColorStops(_preferences);
+    _hoursBelowThreshold = getHoursBelowThreshold(_preferences);
     _tariffComparisonRate = getTariffComparisonRate(_preferences);
 
     // Both boundaries are built from today's local calendar day components

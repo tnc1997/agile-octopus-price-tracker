@@ -14,16 +14,23 @@ import 'historical_charge_todays_summary_comparison_text.dart';
 /// are omitted individually when their reference point isn't strictly
 /// positive, per [_describeComparison].
 class HistoricalChargeTodaysSummaryComparisonColumn extends StatelessWidget {
-  /// The threshold, in pence per kilowatt hour, the 'below' row counts
-  /// against.
-  static const _belowThreshold = 15.00;
-
   const HistoricalChargeTodaysSummaryComparisonColumn({
     super.key,
+    required this.hoursBelowThreshold,
     required this.tariffComparisonRate,
     required this.todaysCharges,
     required this.yesterdaysCharges,
   });
+
+  /// The threshold, in pence per kilowatt hour, the 'hours below' row counts
+  /// against.
+  ///
+  /// Sourced from the user-configurable `hours_below_threshold`
+  /// preference (see [getHoursBelowThreshold] in
+  /// `lib/common/functions.dart`), rather than a hard-coded constant, so
+  /// this row reflects the user's own threshold. This is a distinct value
+  /// from the price colour thresholds, not derived from them.
+  final double hoursBelowThreshold;
 
   /// The flat-rate tariff, in pence per kilowatt hour, today's average is
   /// compared against.
@@ -49,7 +56,7 @@ class HistoricalChargeTodaysSummaryComparisonColumn extends StatelessWidget {
     var below = Duration.zero;
 
     for (final todaysCharge in todaysCharges) {
-      if (todaysCharge.valueIncVat < _belowThreshold) {
+      if (todaysCharge.valueIncVat < hoursBelowThreshold) {
         if (todaysCharge.validFrom case final validFrom?) {
           if (todaysCharge.validTo case final validTo?) {
             below += validTo.difference(validFrom);
@@ -86,7 +93,7 @@ class HistoricalChargeTodaysSummaryComparisonColumn extends StatelessWidget {
               ),
               TextSpan(
                 text:
-                    ' below ${NumberFormat('0.##').format(_belowThreshold)}p/kWh',
+                    ' below ${NumberFormat('0.##').format(hoursBelowThreshold)}p/kWh',
               ),
             ],
           ),

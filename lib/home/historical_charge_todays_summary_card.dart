@@ -13,6 +13,7 @@ class HistoricalChargeTodaysSummaryCard extends StatelessWidget {
     super.key,
     required this.colorStops,
     required this.historicalCharges,
+    required this.hoursBelowThreshold,
     required this.tariffComparisonRate,
   });
 
@@ -29,6 +30,11 @@ class HistoricalChargeTodaysSummaryCard extends StatelessWidget {
   /// at least yesterday through today. The yesterday comparison row is
   /// omitted when the list doesn't cover yesterday.
   final List<HistoricalCharge> historicalCharges;
+
+  /// The threshold, in pence per kilowatt hour, the 'hours below' row counts
+  /// against. Passed straight through to
+  /// [HistoricalChargeTodaysSummaryComparisonColumn].
+  final double hoursBelowThreshold;
 
   /// The flat-rate tariff, in pence per kilowatt hour, that the tariff
   /// comparison sentence compares today's average against. Passed straight
@@ -76,6 +82,7 @@ class HistoricalChargeTodaysSummaryCard extends StatelessWidget {
               ),
               const Divider(),
               HistoricalChargeTodaysSummaryComparisonColumn(
+                hoursBelowThreshold: hoursBelowThreshold,
                 tariffComparisonRate: tariffComparisonRate,
                 todaysCharges: todaysCharges,
                 yesterdaysCharges: yesterdaysCharges,
