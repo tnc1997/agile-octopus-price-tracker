@@ -221,6 +221,22 @@ Future<List<(Color, double)>> getColorStops(
   ];
 }
 
+/// Gets the threshold, in pence per kilowatt hour, that the today's summary
+/// card's 'hours below' row counts against.
+///
+/// Reads the persisted `hours_below_threshold` preference, falling back to
+/// 15.00 — the value this row was hard-coded to before it became
+/// user-configurable — so behaviour is unchanged until a user actively
+/// changes it. This is a distinct preference from `color_stops`: the two
+/// happen to default to a similar price, but serve different purposes (colour
+/// banding across four tiers, versus a single pass/fail cutoff for one stat)
+/// and are not unified.
+Future<double> getHoursBelowThreshold(
+  SharedPreferencesAsync preferences,
+) async {
+  return await preferences.getDouble('hours_below_threshold') ?? 15.00;
+}
+
 /// Gets the tariff comparison rate, in pence per kWh, that the today's
 /// summary card's tariff comparison sentence compares today's average
 /// against.

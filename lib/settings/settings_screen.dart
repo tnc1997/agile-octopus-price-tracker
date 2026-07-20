@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'about_button.dart';
 import 'color_stops_form_card.dart';
 import 'tariff_form_card.dart';
+import 'todays_summary_form_card.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({
@@ -23,6 +24,7 @@ class SettingsScreen extends StatelessWidget {
           children: [
             TariffFormCard(),
             ColorStopsFormCard(),
+            TodaysSummaryFormCard(),
             AboutButton(),
           ],
         ),
