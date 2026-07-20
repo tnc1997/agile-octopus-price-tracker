@@ -252,6 +252,17 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
                 child: _ColorStopPriceFormField(
                   label: const Text('Cheap'),
                   controller: _lowPriceController,
+                  validator: (price) {
+                    final medium = double.tryParse(
+                      _mediumPriceController.text,
+                    );
+
+                    if (medium != null && price >= medium) {
+                      return 'Cheap must be less than moderate.';
+                    }
+
+                    return null;
+                  },
                 ),
               ),
               _ColorStopColorColorIndicator(
@@ -271,6 +282,25 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
                 child: _ColorStopPriceFormField(
                   label: const Text('Moderate'),
                   controller: _mediumPriceController,
+                  validator: (price) {
+                    final low = double.tryParse(
+                      _lowPriceController.text,
+                    );
+
+                    if (low != null && price <= low) {
+                      return 'Moderate must be greater than cheap.';
+                    }
+
+                    final high = double.tryParse(
+                      _highPriceController.text,
+                    );
+
+                    if (high != null && price >= high) {
+                      return 'Moderate must be less than expensive.';
+                    }
+
+                    return null;
+                  },
                 ),
               ),
               _ColorStopColorColorIndicator(
@@ -291,6 +321,17 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
                   label: const Text('Expensive'),
                   prefix: const Text('Above '),
                   controller: _highPriceController,
+                  validator: (price) {
+                    final medium = double.tryParse(
+                      _mediumPriceController.text,
+                    );
+
+                    if (medium != null && price <= medium) {
+                      return 'Expensive must be greater than moderate.';
+                    }
+
+                    return null;
+                  },
                 ),
               ),
               _ColorStopColorColorIndicator(
@@ -303,33 +344,62 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
               ),
             ],
           ),
-          _SaveButton(
-            formKey: _formKey,
-            negativeColor: _negativeColor,
-            lowColor: _lowColor,
-            lowPriceController: _lowPriceController,
-            mediumColor: _mediumColor,
-            mediumPriceController: _mediumPriceController,
-            highColor: _highColor,
-            highPriceController: _highPriceController,
-            savedNegativeColor: _savedNegativeColor,
-            savedLowColor: _savedLowColor,
-            savedLowPrice: _savedLowPrice,
-            savedMediumColor: _savedMediumColor,
-            savedMediumPrice: _savedMediumPrice,
-            savedHighColor: _savedHighColor,
-            savedHighPrice: _savedHighPrice,
-            onPersisted: () {
-              setState(() {
-                _savedNegativeColor = _negativeColor;
-                _savedLowColor = _lowColor;
-                _savedLowPrice = double.parse(_lowPriceController.text);
-                _savedMediumColor = _mediumColor;
-                _savedMediumPrice = double.parse(_mediumPriceController.text);
-                _savedHighColor = _highColor;
-                _savedHighPrice = double.parse(_highPriceController.text);
-              });
-            },
+          Row(
+            spacing: 16.0,
+            children: [
+              Expanded(
+                child: _SaveButton(
+                  formKey: _formKey,
+                  negativeColor: _negativeColor,
+                  lowColor: _lowColor,
+                  lowPriceController: _lowPriceController,
+                  mediumColor: _mediumColor,
+                  mediumPriceController: _mediumPriceController,
+                  highColor: _highColor,
+                  highPriceController: _highPriceController,
+                  savedNegativeColor: _savedNegativeColor,
+                  savedLowColor: _savedLowColor,
+                  savedLowPrice: _savedLowPrice,
+                  savedMediumColor: _savedMediumColor,
+                  savedMediumPrice: _savedMediumPrice,
+                  savedHighColor: _savedHighColor,
+                  savedHighPrice: _savedHighPrice,
+                  onPersisted: () {
+                    setState(() {
+                      _savedNegativeColor = _negativeColor;
+                      _savedLowColor = _lowColor;
+                      _savedLowPrice = double.parse(
+                        _lowPriceController.text,
+                      );
+                      _savedMediumColor = _mediumColor;
+                      _savedMediumPrice = double.parse(
+                        _mediumPriceController.text,
+                      );
+                      _savedHighColor = _highColor;
+                      _savedHighPrice = double.parse(
+                        _highPriceController.text,
+                      );
+                    });
+                  },
+                ),
+              ),
+              _RestoreButton(
+                onRestored: () {
+                  setState(() {
+                    _negativeColor = _defaultNegativeColor;
+                    _lowColor = _defaultLowColor;
+                    _lowPriceController.text =
+                        _defaultLowPrice.toStringAsFixed(2);
+                    _mediumColor = _defaultMediumColor;
+                    _mediumPriceController.text =
+                        _defaultMediumPrice.toStringAsFixed(2);
+                    _highColor = _defaultHighColor;
+                    _highPriceController.text =
+                        _defaultHighPrice.toStringAsFixed(2);
+                  });
+                },
+              ),
+            ],
           ),
         ],
       ),
@@ -488,6 +558,7 @@ class _ColorStopPriceFormField extends StatelessWidget {
     this.enabled = true,
     this.label,
     this.prefix,
+    this.validator,
   });
 
   /// The controller that holds this field's current, unparsed price text.
@@ -516,6 +587,16 @@ class _ColorStopPriceFormField extends StatelessWidget {
   /// "Cheap: Up to 10.00p/kWh") rather than a bare number.
   final Widget? prefix;
 
+  /// An additional, ordering-related check run after the basic "is this a
+  /// valid, non-negative price" check below passes, given the parsed price.
+  ///
+  /// Used by the "Cheap"/"Moderate"/"Expensive" fields to reject values
+  /// that would make the four thresholds non-increasing (e.g. "Expensive"
+  /// set lower than "Moderate"), by comparing against the other two
+  /// controllers' current text. Returning a non-null string surfaces it as
+  /// this field's inline error, same as the basic check.
+  final String? Function(double)? validator;
+
   @override
   Widget build(
     BuildContext context,
@@ -542,7 +623,7 @@ class _ColorStopPriceFormField extends StatelessWidget {
           return 'Please enter a price above 0.00p/kWh.';
         }
 
-        return null;
+        return validator?.call(parsed);
       },
       inputFormatters: [
         // FilteringTextInputFormatter.allow rejects the whole edit (not just
@@ -560,6 +641,67 @@ class _ColorStopPriceFormField extends StatelessWidget {
         }),
       ],
       enabled: enabled,
+    );
+  }
+}
+
+/// The button that resets all four color stops back to their shipped
+/// defaults, without persisting anything itself.
+///
+/// Deliberately styled as a [TextButton] next to [_SaveButton]'s
+/// [FilledButton] so it reads as the secondary action of the pair — a user
+/// glancing at the row shouldn't mistake it for the primary way to commit
+/// changes. Restoring only updates the in-memory color/price state (via
+/// [onRestored], which the parent [_ColorStopsFormState] implements by
+/// setting its fields back to their `_default*` values); the user still
+/// has to press Save afterwards for the reset to actually take effect,
+/// exactly as if they'd retyped the defaults by hand. Since the reset is
+/// silent otherwise (and would otherwise be one tap away from discarding a
+/// customized set of thresholds and colors), this confirms first.
+class _RestoreButton extends StatelessWidget {
+  const _RestoreButton({
+    required this.onRestored,
+  });
+
+  /// Invoked once the user confirms they want to restore the defaults.
+  ///
+  /// The caller is expected to respond by setting its color and price
+  /// controller state back to the shipped defaults.
+  final VoidCallback onRestored;
+
+  @override
+  Widget build(
+    BuildContext context,
+  ) {
+    return TextButton(
+      onPressed: () async {
+        final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              title: const Text('Restore?'),
+              content: const Text(
+                'This restores the price colour thresholds back to their defaults.',
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: const Text('Restore'),
+                ),
+              ],
+            );
+          },
+        );
+
+        if (confirmed == true) {
+          onRestored();
+        }
+      },
+      child: const Text('Restore'),
     );
   }
 }
@@ -673,9 +815,14 @@ class _SaveButton extends StatelessWidget {
         highPriceController,
       ]),
       builder: (context, child) {
-        final lowPrice = double.parse(lowPriceController.text);
-        final mediumPrice = double.parse(mediumPriceController.text);
-        final highPrice = double.parse(highPriceController.text);
+        // Parsed with tryParse (not parse) because the fields' input
+        // formatter allows an empty or bare "." string mid-edit, which
+        // isn't a valid double — that's caught by _ColorStopPriceFormField's
+        // own validator, but the dirty check below also needs to treat it
+        // as "different from the last-saved price" rather than throw.
+        final lowPrice = double.tryParse(lowPriceController.text);
+        final mediumPrice = double.tryParse(mediumPriceController.text);
+        final highPrice = double.tryParse(highPriceController.text);
 
         return FilledButton(
           onPressed: negativeColor != savedNegativeColor ||
