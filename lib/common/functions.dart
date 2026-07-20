@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'constants.dart';
 import 'extensions.dart';
 
 /// Builds the vertical gradient used to color a price series by value.
@@ -234,7 +235,8 @@ Future<List<(Color, double)>> getColorStops(
 Future<double> getHoursBelowThreshold(
   SharedPreferencesAsync preferences,
 ) async {
-  return await preferences.getDouble('hours_below_threshold') ?? 15.00;
+  return await preferences.getDouble('hours_below_threshold') ??
+      defaultHoursBelowThreshold;
 }
 
 /// Gets the tariff comparison rate, in pence per kWh, that the today's
@@ -248,5 +250,6 @@ Future<double> getHoursBelowThreshold(
 Future<double> getTariffComparisonRate(
   SharedPreferencesAsync preferences,
 ) async {
-  return await preferences.getDouble('tariff_comparison_rate') ?? 27.00;
+  return await preferences.getDouble('tariff_comparison_rate') ??
+      defaultTariffComparisonRate;
 }
