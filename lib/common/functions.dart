@@ -215,7 +215,7 @@ Future<List<(Color, double)>> getColorStops(
   }
 
   return const [
-    (defaultNegativeColor, -1.00),
+    (defaultNegativeColor, negativePriceSentinel),
     (defaultLowColor, defaultLowPrice),
     (defaultMediumColor, defaultMediumPrice),
     (defaultHighColor, defaultHighPrice),

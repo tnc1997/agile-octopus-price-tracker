@@ -52,7 +52,7 @@ const defaultNegativeColor = Color(0xff00ffff);
 /// color stops form as its starting value before that preference read
 /// completes. Unlike the other three default prices, this is never compared
 /// against a saved value or written back to preferences — the negative
-/// stop's price is always persisted as the fixed `-1.00` sentinel.
+/// stop's price is always persisted as the fixed [negativePriceSentinel].
 const defaultNegativePrice = 0.00;
 
 /// The default tariff comparison rate, used both as
@@ -60,3 +60,10 @@ const defaultNegativePrice = 0.00;
 /// when nothing has been persisted yet, and as the today's summary form's
 /// starting value before that preference read completes.
 const defaultTariffComparisonRate = 27.00;
+
+/// The fixed price persisted (and used as the fallback stop) for the
+/// negative-price color stop. Not a default in the same sense as the
+/// `defaultXPrice` constants above — it is always used verbatim, never
+/// compared against or overwritten by a user-entered value, since the
+/// negative stop's threshold isn't user-editable.
+const negativePriceSentinel = -1.00;

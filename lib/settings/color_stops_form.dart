@@ -27,7 +27,8 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
   ///
   /// Unlike the other three controllers, this never changes and is never
   /// read back — the negative stop's price is always saved as the fixed
-  /// `-1.00` sentinel (see [_SaveButton._save]), not a user-editable value.
+  /// [negativePriceSentinel] (see [_SaveButton._save]), not a user-editable
+  /// value.
   /// It exists only so the negative row can render through
   /// [_ColorStopPriceFormField] like the other three, with `enabled: false`,
   /// for a visually consistent disabled field showing `0.00`. Disposed in
@@ -691,9 +692,9 @@ class _SaveButton extends StatelessWidget {
   /// The currently selected color for the negative-price stop.
   ///
   /// Applies to unit rates below `0.00p/kWh`. Unlike the other three
-  /// colors, this is saved alongside a fixed `-1.00` price rather than a
-  /// user-editable one — see [_ColorStopPriceFormField]'s docs for why the
-  /// negative threshold itself isn't editable.
+  /// colors, this is saved alongside a fixed [negativePriceSentinel] rather
+  /// than a user-editable one — see [_ColorStopPriceFormField]'s docs for
+  /// why the negative threshold itself isn't editable.
   final Color negativeColor;
 
   /// The currently selected color for the "low" price stop.
@@ -798,7 +799,7 @@ class _SaveButton extends StatelessWidget {
         json.encode([
           {
             'color': negativeColor.toARGB32(),
-            'price': -1.00,
+            'price': negativePriceSentinel,
           },
           {
             'color': lowColor.toARGB32(),
