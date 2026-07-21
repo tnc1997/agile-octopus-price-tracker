@@ -61,6 +61,22 @@ const defaultNegativePrice = 0.00;
 /// starting value before that preference read completes.
 const defaultTariffComparisonRate = 27.00;
 
+/// The known Agile Octopus import product codes, mapped to the label each
+/// is shown under in `ImportProductCodeFormField`'s drop-down.
+///
+/// A map rather than a list of pairs so looking a code's label up — e.g. to
+/// show it while the field is disabled — is an O(1) lookup instead of a
+/// linear scan.
+const importProductCodeLabels = {
+  'AGILE-24-10-01': 'Agile Octopus October 2024 v1',
+  'AGILE-24-04-03': 'Agile Octopus April 2024 v1',
+  'AGILE-23-12-06': 'Agile Octopus December 2023 v1',
+  'AGILE-FLEX-22-11-25': 'Agile Octopus November 2022 v1',
+  'AGILE-22-08-31': 'Agile Octopus August 2022 v1',
+  'AGILE-22-07-22': 'Agile Octopus July 2022 v1',
+  'AGILE-18-02-21': 'Agile Octopus February 2018',
+};
+
 /// The fixed price persisted (and used as the fallback stop) for the
 /// negative-price color stop. Not a default in the same sense as the
 /// `defaultXPrice` constants above — it is always used verbatim, never

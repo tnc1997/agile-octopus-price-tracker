@@ -1,40 +1,12 @@
 import 'package:flutter/material.dart';
 
-class ImportProductCodeFormField extends StatelessWidget {
-  static const _items = [
-    DropdownMenuItem<String>(
-      value: 'AGILE-24-10-01',
-      child: Text('Agile Octopus October 2024 v1'),
-    ),
-    DropdownMenuItem<String>(
-      value: 'AGILE-24-04-03',
-      child: Text('Agile Octopus April 2024 v1'),
-    ),
-    DropdownMenuItem<String>(
-      value: 'AGILE-23-12-06',
-      child: Text('Agile Octopus December 2023 v1'),
-    ),
-    DropdownMenuItem<String>(
-      value: 'AGILE-FLEX-22-11-25',
-      child: Text('Agile Octopus November 2022 v1'),
-    ),
-    DropdownMenuItem<String>(
-      value: 'AGILE-22-08-31',
-      child: Text('Agile Octopus August 2022 v1'),
-    ),
-    DropdownMenuItem<String>(
-      value: 'AGILE-22-07-22',
-      child: Text('Agile Octopus July 2022 v1'),
-    ),
-    DropdownMenuItem<String>(
-      value: 'AGILE-18-02-21',
-      child: Text('Agile Octopus February 2018'),
-    ),
-  ];
+import '../common/constants.dart';
 
+class ImportProductCodeFormField extends StatelessWidget {
   const ImportProductCodeFormField({
     super.key,
     this.enabled = true,
+    this.error,
     required this.value,
     required this.onChanged,
   });
@@ -42,12 +14,19 @@ class ImportProductCodeFormField extends StatelessWidget {
   /// Whether the value can be manually changed via the drop-down.
   ///
   /// Set to `false` by `_TariffFormState` when the "Auto-select latest
-  /// tariff for my region" checkbox is on. In that case the value may be a
+  /// tariff for my region" checkbox is on. In that case [value] may be a
   /// tariff fetched from the API that predates this widget's hard-coded
-  /// [_items] (that's the point of auto-selecting), so rather than force it
+  /// items (that's the point of auto-selecting), so rather than force it
   /// through [DropdownButtonFormField] — which asserts its value matches
   /// exactly one item — it's shown as read-only text instead.
   final bool enabled;
+
+  /// A widget to show in place of the usual helper text when auto-select
+  /// couldn't resolve a tariff, e.g.
+  /// `Text('Failed to find the latest available tariff.')`. Only meaningful
+  /// while [enabled] is `false`; a disabled field with no [value] and no
+  /// [error] reads as still resolving, rather than having failed.
+  final Widget? error;
 
   final String? value;
 
@@ -57,26 +36,46 @@ class ImportProductCodeFormField extends StatelessWidget {
   Widget build(
     BuildContext context,
   ) {
-    return DropdownButtonFormField<String>(
-      items: _items,
-      initialValue: enabled ? value : null,
-      onChanged: enabled ? onChanged : null,
-      decoration: const InputDecoration(
-        label: Text('Tariff'),
-        helper: Text('The version applied to your account'),
-        border: OutlineInputBorder(),
-      ),
-      validator: enabled ? _validate : null,
-    );
-  }
+    if (enabled) {
+      return DropdownButtonFormField<String>(
+        key: ValueKey(value),
+        items: [
+          for (final entry in importProductCodeLabels.entries)
+            DropdownMenuItem<String>(
+              value: entry.key,
+              child: Text(
+                entry.value,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+        ],
+        initialValue: value,
+        onChanged: onChanged,
+        decoration: const InputDecoration(
+          label: Text('Tariff'),
+          helper: Text('The version applied to your account'),
+          border: OutlineInputBorder(),
+        ),
+        validator: (value) {
+          if (value == null || value.isEmpty) {
+            return 'Please select your tariff.';
+          }
 
-  String? _validate(
-    String? value,
-  ) {
-    if (value == null || value.isEmpty) {
-      return 'Please select your tariff.';
+          return null;
+        },
+      );
     }
 
-    return null;
+    return TextFormField(
+      key: ValueKey(value),
+      initialValue: importProductCodeLabels[value] ?? value,
+      enabled: false,
+      decoration: InputDecoration(
+        label: const Text('Tariff'),
+        helper: Text('The version applied to your account'),
+        error: error,
+        border: const OutlineInputBorder(),
+      ),
+    );
   }
 }
