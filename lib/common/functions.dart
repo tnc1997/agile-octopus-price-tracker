@@ -215,10 +215,10 @@ Future<List<(Color, double)>> getColorStops(
   }
 
   return const [
-    (Color(0xff00ffff), -1.00),
-    (Color(0xff00ff00), 10.00),
-    (Color(0xffffff00), 20.00),
-    (Color(0xffff0000), 30.00),
+    (defaultNegativeColor, -1.00),
+    (defaultLowColor, defaultLowPrice),
+    (defaultMediumColor, defaultMediumPrice),
+    (defaultHighColor, defaultHighPrice),
   ];
 }
 

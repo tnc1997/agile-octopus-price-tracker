@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../common/constants.dart';
+
 class ColorStopsForm extends StatefulWidget {
   const ColorStopsForm({
     super.key,
@@ -18,66 +20,6 @@ class ColorStopsForm extends StatefulWidget {
 }
 
 class _ColorStopsFormState extends State<ColorStopsForm> {
-  /// The negative-price stop's color when no `color_stops` preference has
-  /// ever been saved.
-  ///
-  /// Seeds both [_negativeColor] and [_savedNegativeColor] so the two start
-  /// out equal (and therefore [_SaveButton]'s dirty check starts out false)
-  /// until either [initState] loads a previously saved color or the user
-  /// picks a new one.
-  static const _defaultNegativeColor = Color(0xff00ffff);
-
-  /// The negative-price stop's displayed threshold, in p/kWh, when no
-  /// `color_stops` preference has ever been saved.
-  ///
-  /// Seeds [_negativePriceController]'s initial text. Unlike the other
-  /// three default prices, this is never compared against a saved value or
-  /// written back to preferences — see [_negativePriceController] for why.
-  static const _defaultNegativePrice = 0.00;
-
-  /// The "low" price stop's color when no `color_stops` preference has ever
-  /// been saved.
-  ///
-  /// Seeds both [_lowColor] and [_savedLowColor]; see
-  /// [_defaultNegativeColor] for why the same default is used for both.
-  static const _defaultLowColor = Color(0xff00ff00);
-
-  /// The "low" price stop's threshold, in p/kWh, when no `color_stops`
-  /// preference has ever been saved.
-  ///
-  /// Seeds both [_lowPriceController]'s initial text and [_savedLowPrice];
-  /// see [_defaultNegativeColor] for why the same default is used for both.
-  static const _defaultLowPrice = 10.00;
-
-  /// The "medium" price stop's color when no `color_stops` preference has
-  /// ever been saved.
-  ///
-  /// Seeds both [_mediumColor] and [_savedMediumColor]; see
-  /// [_defaultNegativeColor] for why the same default is used for both.
-  static const _defaultMediumColor = Color(0xffffff00);
-
-  /// The "medium" price stop's threshold, in p/kWh, when no `color_stops`
-  /// preference has ever been saved.
-  ///
-  /// Seeds both [_mediumPriceController]'s initial text and
-  /// [_savedMediumPrice]; see [_defaultNegativeColor] for why the same
-  /// default is used for both.
-  static const _defaultMediumPrice = 20.00;
-
-  /// The "high" price stop's color when no `color_stops` preference has
-  /// ever been saved.
-  ///
-  /// Seeds both [_highColor] and [_savedHighColor]; see
-  /// [_defaultNegativeColor] for why the same default is used for both.
-  static const _defaultHighColor = Color(0xffff0000);
-
-  /// The "high" price stop's threshold, in p/kWh, when no `color_stops`
-  /// preference has ever been saved.
-  ///
-  /// Seeds both [_highPriceController]'s initial text and [_savedHighPrice];
-  /// see [_defaultNegativeColor] for why the same default is used for both.
-  static const _defaultHighPrice = 30.00;
-
   final _formKey = GlobalKey<FormState>();
 
   /// The controller holding the negative-price stop's displayed threshold
@@ -91,89 +33,89 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
   /// for a visually consistent disabled field showing `0.00`. Disposed in
   /// [dispose].
   final _negativePriceController = TextEditingController(
-    text: _defaultNegativePrice.toStringAsFixed(2),
+    text: defaultNegativePrice.toStringAsFixed(2),
   );
 
   /// The controller holding the "low" price stop's current, unparsed
   /// threshold text.
   ///
-  /// Seeded from [_defaultLowPrice], overwritten with the persisted value
+  /// Seeded from [defaultLowPrice], overwritten with the persisted value
   /// once [initState]'s preferences read completes, and edited directly by
   /// [_ColorStopPriceFormField] as the user types. Read (and parsed) by
   /// [_SaveButton] both to detect whether this section is dirty and, on
   /// save, to persist the new threshold. Disposed in [dispose].
   final _lowPriceController = TextEditingController(
-    text: _defaultLowPrice.toStringAsFixed(2),
+    text: defaultLowPrice.toStringAsFixed(2),
   );
 
   /// The controller holding the "medium" price stop's current, unparsed
   /// threshold text.
   ///
   /// See [_lowPriceController] — this is the same mechanism, seeded from
-  /// [_defaultMediumPrice] instead.
+  /// [defaultMediumPrice] instead.
   final _mediumPriceController = TextEditingController(
-    text: _defaultMediumPrice.toStringAsFixed(2),
+    text: defaultMediumPrice.toStringAsFixed(2),
   );
 
   /// The controller holding the "high" price stop's current, unparsed
   /// threshold text.
   ///
   /// See [_lowPriceController] — this is the same mechanism, seeded from
-  /// [_defaultHighPrice] instead.
+  /// [defaultHighPrice] instead.
   final _highPriceController = TextEditingController(
-    text: _defaultHighPrice.toStringAsFixed(2),
+    text: defaultHighPrice.toStringAsFixed(2),
   );
 
   /// The negative-price stop's currently selected color, which may not yet
   /// be persisted.
   ///
   /// Starts out equal to [_savedNegativeColor] (both seeded from
-  /// [_defaultNegativeColor], or together from a loaded preference in
+  /// [defaultNegativeColor], or together from a loaded preference in
   /// [initState]) and is updated via `setState` whenever
   /// [_ColorStopColorColorIndicator] reports a newly picked color.
   /// [_SaveButton] compares this against [_savedNegativeColor] to decide
   /// whether the section has unsaved changes, and reads it directly when
   /// persisting.
-  var _negativeColor = _defaultNegativeColor;
+  var _negativeColor = defaultNegativeColor;
 
   /// The "low" price stop's currently selected color, which may not yet be
   /// persisted.
   ///
   /// See [_negativeColor] — this is the same mechanism, paired with
-  /// [_savedLowColor] and seeded from [_defaultLowColor] instead.
-  var _lowColor = _defaultLowColor;
+  /// [_savedLowColor] and seeded from [defaultLowColor] instead.
+  var _lowColor = defaultLowColor;
 
   /// The "medium" price stop's currently selected color, which may not yet
   /// be persisted.
   ///
   /// See [_negativeColor] — this is the same mechanism, paired with
-  /// [_savedMediumColor] and seeded from [_defaultMediumColor] instead.
-  var _mediumColor = _defaultMediumColor;
+  /// [_savedMediumColor] and seeded from [defaultMediumColor] instead.
+  var _mediumColor = defaultMediumColor;
 
   /// The "high" price stop's currently selected color, which may not yet be
   /// persisted.
   ///
   /// See [_negativeColor] — this is the same mechanism, paired with
-  /// [_savedHighColor] and seeded from [_defaultHighColor] instead.
-  var _highColor = _defaultHighColor;
+  /// [_savedHighColor] and seeded from [defaultHighColor] instead.
+  var _highColor = defaultHighColor;
 
   /// The negative-price stop's last-persisted color, i.e. the color
   /// currently written to the `color_stops` preference.
   ///
   /// Kept in sync with what's actually on disk: seeded from
-  /// [_defaultNegativeColor], overwritten with the persisted value once
+  /// [defaultNegativeColor], overwritten with the persisted value once
   /// [initState]'s preferences read completes, and advanced to
   /// [_negativeColor]'s current value once [_SaveButton] reports a
   /// successful save via `onPersisted`. [_SaveButton] compares this against
   /// [_negativeColor] to decide whether the section has unsaved changes.
-  var _savedNegativeColor = _defaultNegativeColor;
+  var _savedNegativeColor = defaultNegativeColor;
 
   /// The "low" price stop's last-persisted color, i.e. the color currently
   /// written to the `color_stops` preference.
   ///
   /// See [_savedNegativeColor] — this is the same mechanism, paired with
-  /// [_lowColor] and seeded from [_defaultLowColor] instead.
-  var _savedLowColor = _defaultLowColor;
+  /// [_lowColor] and seeded from [defaultLowColor] instead.
+  var _savedLowColor = defaultLowColor;
 
   /// The "low" price stop's last-persisted threshold, i.e. the price
   /// currently written to the `color_stops` preference, in p/kWh.
@@ -184,35 +126,35 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
   /// and compares the result against this field to decide whether the
   /// section is dirty, then advances this field to the newly parsed value
   /// once a save succeeds (via `onPersisted`).
-  var _savedLowPrice = _defaultLowPrice;
+  var _savedLowPrice = defaultLowPrice;
 
   /// The "medium" price stop's last-persisted color, i.e. the color
   /// currently written to the `color_stops` preference.
   ///
   /// See [_savedNegativeColor] — this is the same mechanism, paired with
-  /// [_mediumColor] and seeded from [_defaultMediumColor] instead.
-  var _savedMediumColor = _defaultMediumColor;
+  /// [_mediumColor] and seeded from [defaultMediumColor] instead.
+  var _savedMediumColor = defaultMediumColor;
 
   /// The "medium" price stop's last-persisted threshold, i.e. the price
   /// currently written to the `color_stops` preference, in p/kWh.
   ///
   /// See [_savedLowPrice] — this is the same mechanism, paired with
-  /// [_mediumPriceController] and seeded from [_defaultMediumPrice] instead.
-  var _savedMediumPrice = _defaultMediumPrice;
+  /// [_mediumPriceController] and seeded from [defaultMediumPrice] instead.
+  var _savedMediumPrice = defaultMediumPrice;
 
   /// The "high" price stop's last-persisted color, i.e. the color currently
   /// written to the `color_stops` preference.
   ///
   /// See [_savedNegativeColor] — this is the same mechanism, paired with
-  /// [_highColor] and seeded from [_defaultHighColor] instead.
-  var _savedHighColor = _defaultHighColor;
+  /// [_highColor] and seeded from [defaultHighColor] instead.
+  var _savedHighColor = defaultHighColor;
 
   /// The "high" price stop's last-persisted threshold, i.e. the price
   /// currently written to the `color_stops` preference, in p/kWh.
   ///
   /// See [_savedLowPrice] — this is the same mechanism, paired with
-  /// [_highPriceController] and seeded from [_defaultHighPrice] instead.
-  var _savedHighPrice = _defaultHighPrice;
+  /// [_highPriceController] and seeded from [defaultHighPrice] instead.
+  var _savedHighPrice = defaultHighPrice;
 
   @override
   Widget build(
@@ -386,16 +328,16 @@ class _ColorStopsFormState extends State<ColorStopsForm> {
               _RestoreButton(
                 onRestored: () {
                   setState(() {
-                    _negativeColor = _defaultNegativeColor;
-                    _lowColor = _defaultLowColor;
+                    _negativeColor = defaultNegativeColor;
+                    _lowColor = defaultLowColor;
                     _lowPriceController.text =
-                        _defaultLowPrice.toStringAsFixed(2);
-                    _mediumColor = _defaultMediumColor;
+                        defaultLowPrice.toStringAsFixed(2);
+                    _mediumColor = defaultMediumColor;
                     _mediumPriceController.text =
-                        _defaultMediumPrice.toStringAsFixed(2);
-                    _highColor = _defaultHighColor;
+                        defaultMediumPrice.toStringAsFixed(2);
+                    _highColor = defaultHighColor;
                     _highPriceController.text =
-                        _defaultHighPrice.toStringAsFixed(2);
+                        defaultHighPrice.toStringAsFixed(2);
                   });
                 },
               ),
