@@ -28,8 +28,9 @@ class _HistoryScreenState extends State<HistoryScreen> {
 
   /// The shared preferences store, read once from the provider in [initState].
   ///
-  /// Source of the `import_product_code` and `import_tariff_code` the charges
-  /// are fetched for, and the persisted `color_stops` gradient.
+  /// Source of the `import_product_code`/`import_tariff_code` the charges
+  /// are fetched for (see [getImportProductCodeAndImportTariffCode]), and the
+  /// persisted `color_stops` gradient.
   late final SharedPreferencesAsync _preferences;
 
   /// The color gradient stops used to color the textual charges and the chart
@@ -204,10 +205,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final periodFrom = dateRange.start;
     final periodTo = dateRange.end.add(const Duration(days: 1));
 
-    final (productCode, tariffCode) = await (
-      _preferences.getString('import_product_code'),
-      _preferences.getString('import_tariff_code'),
-    ).wait;
+    final (
+      productCode,
+      tariffCode,
+    ) = await getImportProductCodeAndImportTariffCode(
+      _client,
+      _preferences,
+    );
 
     final historicalCharges = <HistoricalCharge>[];
 
@@ -216,8 +220,8 @@ class _HistoryScreenState extends State<HistoryScreen> {
     while (true) {
       final result =
           await _client.products.listElectricityTariffStandardUnitRates(
-        productCode!,
-        tariffCode!,
+        productCode,
+        tariffCode,
         page: page,
         pageSize: 1500,
         periodFrom: periodFrom,

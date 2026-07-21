@@ -96,14 +96,6 @@ class MyApp extends StatelessWidget {
             return WelcomeRoute().location;
           }
 
-          if (!await preferences.containsKey('import_product_code')) {
-            return WelcomeRoute().location;
-          }
-
-          if (!await preferences.containsKey('import_tariff_code')) {
-            return WelcomeRoute().location;
-          }
-
           return null;
         },
       ),

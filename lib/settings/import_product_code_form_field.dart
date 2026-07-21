@@ -34,9 +34,20 @@ class ImportProductCodeFormField extends StatelessWidget {
 
   const ImportProductCodeFormField({
     super.key,
+    this.enabled = true,
     required this.value,
     required this.onChanged,
   });
+
+  /// Whether the value can be manually changed via the drop-down.
+  ///
+  /// Set to `false` by `_TariffFormState` when the "Auto-select latest
+  /// tariff for my region" checkbox is on. In that case the value may be a
+  /// tariff fetched from the API that predates this widget's hard-coded
+  /// [_items] (that's the point of auto-selecting), so rather than force it
+  /// through [DropdownButtonFormField] — which asserts its value matches
+  /// exactly one item — it's shown as read-only text instead.
+  final bool enabled;
 
   final String? value;
 
@@ -48,20 +59,24 @@ class ImportProductCodeFormField extends StatelessWidget {
   ) {
     return DropdownButtonFormField<String>(
       items: _items,
-      initialValue: value,
-      onChanged: onChanged,
+      initialValue: enabled ? value : null,
+      onChanged: enabled ? onChanged : null,
       decoration: const InputDecoration(
         label: Text('Tariff'),
         helper: Text('The version applied to your account'),
         border: OutlineInputBorder(),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Please select your tariff.';
-        }
-
-        return null;
-      },
+      validator: enabled ? _validate : null,
     );
+  }
+
+  String? _validate(
+    String? value,
+  ) {
+    if (value == null || value.isEmpty) {
+      return 'Please select your tariff.';
+    }
+
+    return null;
   }
 }
