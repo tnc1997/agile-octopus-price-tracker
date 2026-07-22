@@ -316,7 +316,12 @@ class _SaveButton extends StatelessWidget {
                   gridSupplyPointGroupId != savedGridSupplyPointGroupId)
           ? () => _save(context)
           : null,
-      child: const Text('Save'),
+      child: Text(
+        switch (GoRouterState.of(context).uri.path) {
+          '/welcome' => 'Continue',
+          _ => 'Save',
+        },
+      ),
     );
   }
 
