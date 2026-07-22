@@ -219,14 +219,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final yesterday = DateTime(today.year, today.month, today.day - 1);
     final dayAfterTomorrow = DateTime(today.year, today.month, today.day + 2);
 
-    _historicalCharges = (
-      _preferences.getString('import_product_code'),
-      _preferences.getString('import_tariff_code'),
-    ).wait.then(
+    _historicalCharges = getImportProductCodeAndImportTariffCode(
+      client,
+      _preferences,
+    ).then(
       (value) {
         return client.products.listElectricityTariffStandardUnitRates(
-          value.$1!,
-          value.$2!,
+          value.$1,
+          value.$2,
           // Three full calendar days of half-hour slots (yesterday, today and
           // tomorrow) is 144, plus a small buffer so a daylight saving
           // fall-back day in the range — 25 hours, i.e. two extra half-hour
@@ -268,7 +268,7 @@ class _HomeScreenState extends State<HomeScreen> {
       return const [];
     }
 
-    final gsp = await _preferences.getString('grid_supply_point_group_id');
+    final gsp = await getGridSupplyPointGroupId(_preferences);
     if (gsp == null) {
       return const [];
     }

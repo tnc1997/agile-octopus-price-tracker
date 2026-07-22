@@ -4,8 +4,11 @@ import 'package:octopus_energy_api_client/v1.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../common/constants.dart';
+import '../common/functions.dart';
 import '../common/shell_route.dart';
 import '../main.dart';
+import 'auto_select_latest_import_product_code_form_field.dart';
 import 'grid_supply_point_group_id_form_field.dart';
 import 'import_product_code_form_field.dart';
 
@@ -23,6 +26,35 @@ class TariffForm extends StatefulWidget {
 class _TariffFormState extends State<TariffForm> {
   final _formKey = GlobalKey<FormState>();
 
+  /// Whether the tariff should be kept up to date automatically, which may
+  /// not yet match what's persisted.
+  ///
+  /// There's no dedicated preference for this — it's just whether
+  /// `import_product_code` is unset, which is what
+  /// [getImportProductCodeAndImportTariffCode] also keys off. Defaults to
+  /// `true` so a brand-new install (nothing saved yet, before [initState]'s
+  /// preferences read completes) starts with auto-select on; that read then
+  /// sets this to [_importProductCode] being `null`, which flips it to
+  /// `false` for an existing install with a manually-chosen tariff — neither
+  /// case needs its own migration or default handling. Toggling
+  /// [AutoSelectLatestImportProductCodeFormField] updates this via
+  /// `setState` and, when turning it on, triggers
+  /// [_refreshAutoSelectedImportProductCode] so [_importProductCode] reflects
+  /// the current auto-selection rather than sitting blank.
+  var _autoSelectLatestImportProductCode = true;
+
+  /// A widget to show instead of [ImportProductCodeFormField]'s usual
+  /// helper text when [_refreshAutoSelectedImportProductCode] fails to
+  /// resolve a tariff.
+  ///
+  /// Distinguishes "auto-select couldn't find a tariff" from "still
+  /// resolving" or "resolved successfully" — both of which leave this
+  /// `null` — so the field never presents a plain blank in place of a
+  /// genuine failure. Cleared whenever a refresh starts or succeeds, and
+  /// whenever auto-select is switched off (the drop-down goes back to
+  /// validating itself in that case).
+  Widget? _autoSelectLatestImportProductCodeError;
+
   /// The currently selected grid supply point group identifier, which may
   /// not yet be persisted.
   ///
@@ -34,12 +66,27 @@ class _TariffFormState extends State<TariffForm> {
   /// unsaved changes, and reads it directly when persisting.
   String? _gridSupplyPointGroupId;
 
-  /// The currently selected import product code, which may not yet be
-  /// persisted.
+  /// The import product code currently shown in [ImportProductCodeFormField],
+  /// which may not yet be persisted.
   ///
-  /// See [_gridSupplyPointGroupId] — this is the same mechanism, paired
-  /// with [_savedImportProductCode] and populated via
-  /// [ImportProductCodeFormField]'s `onChanged` callback instead.
+  /// While [_autoSelectLatestImportProductCode] is on, this is whatever
+  /// [_refreshAutoSelectedImportProductCode] most recently resolved (or
+  /// `null` if it hasn't resolved one yet — see
+  /// [_autoSelectLatestImportProductCodeError] for why that's not itself an error
+  /// state) — populated so the field can show the user which tariff is
+  /// actually in effect while disabled, rather than presenting a blank
+  /// field that gives no visibility into what auto-select chose. While off,
+  /// this is the user's manual pick, populated via
+  /// [ImportProductCodeFormField]'s `onChanged` callback, which is only
+  /// reachable while that field is enabled.
+  ///
+  /// See [_gridSupplyPointGroupId] for the general "may not yet be
+  /// persisted" mechanism, paired with [_savedImportProductCode] — but note
+  /// that pairing only reflects *persisted* state; while auto-select is on,
+  /// this holds a resolved-for-display value even though nothing is written
+  /// to the `import_product_code` preference (see
+  /// [_savedImportProductCode]'s doc for how [_SaveButton] accounts for
+  /// that).
   String? _importProductCode;
 
   /// The last-persisted grid supply point group identifier, i.e. the value
@@ -54,10 +101,18 @@ class _TariffFormState extends State<TariffForm> {
   String? _savedGridSupplyPointGroupId;
 
   /// The last-persisted import product code, i.e. the value currently
-  /// written to the `import_product_code` preference.
+  /// written to the `import_product_code` preference, or `null` if
+  /// auto-select is (persisted as) on.
   ///
-  /// See [_savedGridSupplyPointGroupId] — this is the same mechanism,
-  /// paired with [_importProductCode] instead.
+  /// See [_savedGridSupplyPointGroupId] for the general mechanism, but note
+  /// [_importProductCode] itself isn't compared against this directly:
+  /// while auto-select is on, [_importProductCode] holds whatever tariff is
+  /// currently resolved for *display*, which drifts over time as newer
+  /// tariffs are published — that drift is expected and isn't itself an
+  /// unsaved change. [_SaveButton] instead compares
+  /// [_autoSelectLatestImportProductCode] against
+  /// `savedImportProductCode == null`, and only compares
+  /// [_importProductCode] itself when auto-select is off.
   String? _savedImportProductCode;
 
   @override
@@ -79,6 +134,8 @@ class _TariffFormState extends State<TariffForm> {
             },
           ),
           ImportProductCodeFormField(
+            enabled: !_autoSelectLatestImportProductCode,
+            error: _autoSelectLatestImportProductCodeError,
             value: _importProductCode,
             onChanged: (importProductCode) {
               setState(() {
@@ -86,8 +143,30 @@ class _TariffFormState extends State<TariffForm> {
               });
             },
           ),
+          AutoSelectLatestImportProductCodeFormField(
+            value: _autoSelectLatestImportProductCode,
+            onChanged: (autoSelectLatestImportProductCode) {
+              setState(() {
+                _autoSelectLatestImportProductCode =
+                    autoSelectLatestImportProductCode;
+
+                _autoSelectLatestImportProductCodeError = null;
+
+                if (autoSelectLatestImportProductCode ||
+                    !importProductCodeLabels.containsKey(_importProductCode)) {
+                  _importProductCode = null;
+                }
+              });
+
+              if (autoSelectLatestImportProductCode) {
+                _refreshAutoSelectedImportProductCode();
+              }
+            },
+          ),
           _SaveButton(
             formKey: _formKey,
+            autoSelectLatestImportProductCode:
+                _autoSelectLatestImportProductCode,
             gridSupplyPointGroupId: _gridSupplyPointGroupId,
             importProductCode: _importProductCode,
             savedGridSupplyPointGroupId: _savedGridSupplyPointGroupId,
@@ -95,7 +174,9 @@ class _TariffFormState extends State<TariffForm> {
             onPersisted: () {
               setState(() {
                 _savedGridSupplyPointGroupId = _gridSupplyPointGroupId;
-                _savedImportProductCode = _importProductCode;
+                _savedImportProductCode = _autoSelectLatestImportProductCode
+                    ? null
+                    : _importProductCode;
               });
             },
           ),
@@ -110,24 +191,76 @@ class _TariffFormState extends State<TariffForm> {
 
     final preferences = context.read<SharedPreferencesAsync>();
 
-    preferences.getString('grid_supply_point_group_id').then((value) {
+    getGridSupplyPointGroupId(preferences).then((value) {
       setState(() {
         _gridSupplyPointGroupId = value;
         _savedGridSupplyPointGroupId = value;
       });
     });
 
-    preferences.getString('import_product_code').then((value) {
+    getImportProductCode(preferences).then((value) {
       setState(() {
+        _autoSelectLatestImportProductCode = value == null;
         _importProductCode = value;
         _savedImportProductCode = value;
       });
+
+      if (value == null) {
+        _refreshAutoSelectedImportProductCode();
+      }
+    });
+  }
+
+  /// Resolves the latest available Agile Octopus import product code and
+  /// updates [_importProductCode] (or [_autoSelectLatestImportProductCodeError] on
+  /// failure) to match.
+  ///
+  /// Called whenever auto-select is (or becomes) enabled — from [initState]
+  /// if it's already persisted that way, and from the checkbox's `onChanged`
+  /// if the user just turned it on — so the drop-down always shows which
+  /// tariff is actually in effect while it's disabled, rather than a blank
+  /// field with no indication of what auto-select actually chose.
+  Future<void> _refreshAutoSelectedImportProductCode() async {
+    final client = context.read<OctopusEnergyApiClient>();
+
+    final Products? latest;
+
+    try {
+      latest = await findLatestAgileProduct(client);
+    } catch (e) {
+      setState(() {
+        _autoSelectLatestImportProductCodeError = const Text(
+          'Failed to get the latest available tariff.',
+        );
+
+        _importProductCode = null;
+      });
+
+      return;
+    }
+
+    if (latest == null) {
+      setState(() {
+        _autoSelectLatestImportProductCodeError = const Text(
+          'Failed to find the latest available tariff.',
+        );
+
+        _importProductCode = null;
+      });
+
+      return;
+    }
+
+    setState(() {
+      _autoSelectLatestImportProductCodeError = null;
+      _importProductCode = latest!.code;
     });
   }
 }
 
 class _SaveButton extends StatelessWidget {
   const _SaveButton({
+    required this.autoSelectLatestImportProductCode,
     required this.formKey,
     required this.gridSupplyPointGroupId,
     required this.importProductCode,
@@ -136,10 +269,17 @@ class _SaveButton extends StatelessWidget {
     required this.savedImportProductCode,
   });
 
+  final bool autoSelectLatestImportProductCode;
+
   final GlobalKey<FormState> formKey;
 
   final String? gridSupplyPointGroupId;
 
+  /// The import product code currently shown in
+  /// [ImportProductCodeFormField] — resolved by auto-select or manually
+  /// picked — or `null` if neither has happened yet (auto-select is still
+  /// resolving, failed, or the user switched to manual with nothing chosen).
+  /// See `_TariffFormState._importProductCode`.
   final String? importProductCode;
 
   /// Invoked once the data has been successfully persisted, so the parent
@@ -154,10 +294,13 @@ class _SaveButton extends StatelessWidget {
   final String? savedGridSupplyPointGroupId;
 
   /// The last-saved import product code, i.e. the value currently persisted
-  /// to preferences.
+  /// to preferences, or `null` if auto-select is (persisted as) on.
   ///
-  /// Compared against [importProductCode] to decide whether this form
-  /// has unsaved changes.
+  /// Compared against [autoSelectLatestImportProductCode] (there's no
+  /// dedicated preference for it — see
+  /// `_TariffFormState._savedImportProductCode`) and, only while auto-select
+  /// is off, against [importProductCode], to decide whether this form has
+  /// unsaved changes.
   final String? savedImportProductCode;
 
   @override
@@ -165,8 +308,12 @@ class _SaveButton extends StatelessWidget {
     BuildContext context,
   ) {
     return FilledButton(
-      onPressed: gridSupplyPointGroupId != savedGridSupplyPointGroupId ||
-              importProductCode != savedImportProductCode
+      onPressed: importProductCode != null &&
+              ((autoSelectLatestImportProductCode !=
+                      (savedImportProductCode == null)) ||
+                  (!autoSelectLatestImportProductCode &&
+                      importProductCode != savedImportProductCode) ||
+                  gridSupplyPointGroupId != savedGridSupplyPointGroupId)
           ? () => _save(context)
           : null,
       child: const Text('Save'),
@@ -180,6 +327,12 @@ class _SaveButton extends StatelessWidget {
       return;
     }
 
+    // Guaranteed non-null by `onPressed`'s guard above — auto-select always
+    // has a resolved [importProductCode] by the time Save is reachable
+    // (`_refreshAutoSelectedImportProductCode` populates it eagerly, not at
+    // save time), and manual mode's own validator requires one too.
+    final importProductCode = this.importProductCode!;
+
     final client = context.read<OctopusEnergyApiClient>();
     final messenger = ScaffoldMessenger.of(context);
     final preferences = context.read<SharedPreferencesAsync>();
@@ -187,10 +340,19 @@ class _SaveButton extends StatelessWidget {
     final routerState = GoRouterState.of(context);
 
     try {
-      await preferences.setString(
-        'import_product_code',
-        importProductCode!,
-      );
+      // Auto-select has no preference of its own: leaving
+      // `import_product_code` unset *is* "on", so
+      // [getImportProductCodeAndImportTariffCode] keeps resolving the
+      // latest tariff fresh on every price fetch. Setting it *is* "off",
+      // pinning the manually-chosen product for good.
+      if (autoSelectLatestImportProductCode) {
+        await preferences.remove('import_product_code');
+      } else {
+        await preferences.setString(
+          'import_product_code',
+          importProductCode,
+        );
+      }
     } catch (e) {
       messenger.showSnackBar(
         const SnackBar(
@@ -220,7 +382,7 @@ class _SaveButton extends StatelessWidget {
 
     try {
       product = await client.products.retrieveProduct(
-        importProductCode!,
+        importProductCode,
         tariffsActiveAt: DateTime.now().toUtc(),
       );
     } catch (e) {
@@ -251,10 +413,18 @@ class _SaveButton extends StatelessWidget {
     }
 
     try {
-      await preferences.setString(
-        'import_tariff_code',
-        importTariffCode,
-      );
+      // Mirrors `import_product_code` above: cleared while auto-select is
+      // on, rather than left holding a resolved value that
+      // [getImportProductCodeAndImportTariffCode] wouldn't read back anyway
+      // (it already re-fetches whenever *either* preference is unset).
+      if (autoSelectLatestImportProductCode) {
+        await preferences.remove('import_tariff_code');
+      } else {
+        await preferences.setString(
+          'import_tariff_code',
+          importTariffCode,
+        );
+      }
     } catch (e) {
       messenger.showSnackBar(
         const SnackBar(

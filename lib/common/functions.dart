@@ -192,6 +192,50 @@ Color? calculatePriceColor(
   return (cheapestWindow, cheapestAverage);
 }
 
+/// Finds the currently-available Agile Octopus electricity product with the
+/// most recent `available_from`.
+///
+/// Octopus periodically retires the current Agile product code and publishes
+/// a new one (e.g. `AGILE-24-10-01`), so this looks across every
+/// currently-available variable product for ones matching that naming
+/// convention, rather than trusting a single hard-coded code. Paginates
+/// through every page the API returns. Returns `null` if none match.
+Future<Products?> findLatestAgileProduct(
+  OctopusEnergyApiClient client,
+) async {
+  final matches = <Products>[];
+
+  var page = 1;
+
+  while (true) {
+    final products = await client.products.listProducts(
+      availableAt: DateTime.now().toUtc(),
+      isVariable: true,
+      page: page,
+    );
+
+    matches.addAll(
+      products.results.where(
+        (product) => product.code.startsWith('AGILE-'),
+      ),
+    );
+
+    if (products.next == null) {
+      break;
+    }
+
+    page++;
+  }
+
+  if (matches.isEmpty) {
+    return null;
+  }
+
+  return matches.reduce(
+    (a, b) => b.availableFrom.isAfter(a.availableFrom) ? b : a,
+  );
+}
+
 /// Gets the color gradient stops used to color a price by its unit rate.
 ///
 /// Reads the persisted `color_stops` preference, falling back to a built-in
@@ -222,6 +266,20 @@ Future<List<(Color, double)>> getColorStops(
   ];
 }
 
+/// Gets the grid supply point group identifier for the user's chosen region.
+///
+/// Reads the persisted `grid_supply_point_group_id` preference. Returned
+/// nullable rather than asserted: it's always set by the time a screen uses
+/// it to fetch prices — the welcome screen requires it, the same as
+/// `import_product_code`/`import_tariff_code` (see the redirect in
+/// `lib/main.dart`) — but the Settings tariff form also reads it before
+/// that's guaranteed, e.g. while still on the welcome screen.
+Future<String?> getGridSupplyPointGroupId(
+  SharedPreferencesAsync preferences,
+) {
+  return preferences.getString('grid_supply_point_group_id');
+}
+
 /// Gets the threshold, in pence per kilowatt hour, that the today's summary
 /// card's 'hours below' row counts against.
 ///
@@ -237,6 +295,66 @@ Future<double> getHoursBelowThreshold(
 ) async {
   return await preferences.getDouble('hours_below_threshold') ??
       defaultHoursBelowThreshold;
+}
+
+/// Gets the manually-pinned import product code, or `null` if "Auto-select
+/// latest tariff for my region" is on (or hasn't been decided yet).
+///
+/// Reads the persisted `import_product_code` preference directly — there's
+/// no default to fall back to, since its absence is meaningful (see
+/// [getImportProductCodeAndImportTariffCode]) rather than merely unset.
+Future<String?> getImportProductCode(
+  SharedPreferencesAsync preferences,
+) {
+  return preferences.getString('import_product_code');
+}
+
+/// Gets the import product code and import tariff code to fetch electricity
+/// unit rates for.
+///
+/// If the user has manually pinned a tariff — `import_product_code` is set —
+/// returns that alongside the persisted `import_tariff_code`, unchanged from
+/// before this preference existed. Otherwise, "Auto-select latest tariff for
+/// my region" is on, so this finds the latest available Agile product fresh,
+/// right here, every time it's called, rather than relying on a
+/// separately-refreshed cached value: simpler for now, at the cost of a
+/// couple of extra API calls on every fetch.
+Future<(String, String)> getImportProductCodeAndImportTariffCode(
+  OctopusEnergyApiClient client,
+  SharedPreferencesAsync preferences,
+) async {
+  var (
+    importProductCode,
+    importTariffCode,
+  ) = await (
+    getImportProductCode(preferences),
+    preferences.getString(
+      'import_tariff_code',
+    ),
+  ).wait;
+
+  if (importProductCode == null || importTariffCode == null) {
+    final product = await client.products.retrieveProduct(
+      (await findLatestAgileProduct(client))!.code,
+      tariffsActiveAt: DateTime.now().toUtc(),
+    );
+
+    importProductCode = product.code;
+
+    final gridSupplyPointGroupId = await getGridSupplyPointGroupId(
+      preferences,
+    );
+
+    importTariffCode = product
+        .singleRegisterElectricityTariffs![gridSupplyPointGroupId!]![
+            'direct_debit_monthly']!
+        .code!;
+  }
+
+  return (
+    importProductCode,
+    importTariffCode,
+  );
 }
 
 /// Gets the tariff comparison rate, in pence per kWh, that the today's
