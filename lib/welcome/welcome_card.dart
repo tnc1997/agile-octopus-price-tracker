@@ -24,7 +24,7 @@ class WelcomeCard extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             Text(
-              'Price Tracker for Agile Octopus allows you to track the prices for Agile Octopus.',
+              'Let\'s get you set up to track your Agile Octopus prices.',
               textAlign: TextAlign.center,
             ),
           ],
