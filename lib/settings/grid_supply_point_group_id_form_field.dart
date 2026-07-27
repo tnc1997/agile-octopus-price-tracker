@@ -70,6 +70,7 @@ class _GridSupplyPointGroupIdFormFieldState
                     GridSupplyPointGroupNames.yorkshire,
                   _ => 'Unknown',
                 },
+                overflow: TextOverflow.ellipsis,
               ),
             );
           },
