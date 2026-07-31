@@ -1,8 +1,8 @@
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 
+import '../common/extensions.dart';
 import 'historical_charge_todays_summary_comparison_text.dart';
 
 /// The bottom comparison section of `HistoricalChargeTodaysSummaryCard`: the
@@ -65,17 +65,15 @@ class HistoricalChargeTodaysSummaryComparisonColumn extends StatelessWidget {
       }
     }
 
-    final yesterdaysAverage = yesterdaysCharges.map(
-      (yesterdaysCharge) {
-        return yesterdaysCharge.valueIncVat;
-      },
-    ).average;
+    // Only computed when there's anything to average — `averageValueIncVat`
+    // throws on an empty iterable, and an empty [yesterdaysCharges] is the
+    // normal case whenever the caller-supplied `historicalCharges` doesn't
+    // reach back that far, not something callers guarantee never happens.
+    final yesterdaysAverage = yesterdaysCharges.isNotEmpty
+        ? yesterdaysCharges.averageValueIncVat
+        : null;
 
-    final todaysAverage = todaysCharges.map(
-      (todaysCharge) {
-        return todaysCharge.valueIncVat;
-      },
-    ).average;
+    final todaysAverage = todaysCharges.averageValueIncVat;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -98,7 +96,7 @@ class HistoricalChargeTodaysSummaryComparisonColumn extends StatelessWidget {
             ],
           ),
         ),
-        if (yesterdaysCharges.isNotEmpty)
+        if (yesterdaysAverage != null)
           if (_describeComparison(todaysAverage, yesterdaysAverage)
               case final percentage?)
             HistoricalChargeTodaysSummaryComparisonText(

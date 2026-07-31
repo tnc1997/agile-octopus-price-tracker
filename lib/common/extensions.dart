@@ -1,3 +1,6 @@
+import 'package:collection/collection.dart';
+import 'package:octopus_energy_api_client/v1.dart';
+
 extension IterableDoubleExtensions on Iterable<double> {
   double get median {
     final values = [...this]..sort();
@@ -9,6 +12,15 @@ extension IterableDoubleExtensions on Iterable<double> {
     }
 
     return (values[middle - 1] + values[middle]) / 2;
+  }
+}
+
+extension IterableHistoricalChargeExtensions on Iterable<HistoricalCharge> {
+  /// The arithmetic mean of every charge's [HistoricalCharge.valueIncVat].
+  ///
+  /// Throws a [StateError] if this is empty, exactly as `.average` does.
+  double get averageValueIncVat {
+    return map((historicalCharge) => historicalCharge.valueIncVat).average;
   }
 }
 
