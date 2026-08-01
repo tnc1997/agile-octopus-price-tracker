@@ -2,7 +2,14 @@ import 'package:collection/collection.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 
 extension IterableDoubleExtensions on Iterable<double> {
+  /// The median of this iterable.
+  ///
+  /// Throws a [StateError] if this is empty.
   double get median {
+    if (isEmpty) {
+      throw StateError('No elements');
+    }
+
     final values = [...this]..sort();
 
     final middle = values.length ~/ 2;
@@ -21,6 +28,13 @@ extension IterableHistoricalChargeExtensions on Iterable<HistoricalCharge> {
   /// Throws a [StateError] if this is empty, exactly as `.average` does.
   double get averageValueIncVat {
     return map((historicalCharge) => historicalCharge.valueIncVat).average;
+  }
+
+  /// The median of every charge's [HistoricalCharge.valueIncVat].
+  ///
+  /// Throws a [StateError] if this is empty, exactly as `.median` does.
+  double get medianValueIncVat {
+    return map((historicalCharge) => historicalCharge.valueIncVat).median;
   }
 }
 

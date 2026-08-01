@@ -6,6 +6,56 @@ import '../helpers.dart';
 
 void main() {
   group(
+    'IterableDoubleExtensions',
+    () {
+      group(
+        'median',
+        () {
+          test(
+            'returns the average of the two middle values for an even-length list',
+            () {
+              expect(
+                [100.0, 10.0, 20.0, 30.0].median,
+                25,
+              );
+            },
+          );
+
+          test(
+            'returns the middle value for an odd-length list',
+            () {
+              expect(
+                [100.0, 10.0, 20.0].median,
+                20,
+              );
+            },
+          );
+
+          test(
+            'returns the value for a single-element list',
+            () {
+              expect(
+                [10.0].median,
+                10,
+              );
+            },
+          );
+
+          test(
+            'throws a StateError for an empty list',
+            () {
+              expect(
+                () => <double>[].median,
+                throwsStateError,
+              );
+            },
+          );
+        },
+      );
+    },
+  );
+
+  group(
     'IterableHistoricalChargeExtensions',
     () {
       group(
@@ -74,6 +124,82 @@ void main() {
             () {
               expect(
                 () => <HistoricalCharge>[].averageValueIncVat,
+                throwsStateError,
+              );
+            },
+          );
+        },
+      );
+
+      group(
+        'medianValueIncVat',
+        () {
+          test(
+            'is unaffected by input order',
+            () {
+              final historicalCharges = [
+                historicalCharge(0, 30),
+                historicalCharge(30, 10),
+                historicalCharge(60, 20),
+              ];
+
+              expect(
+                historicalCharges.medianValueIncVat,
+                20,
+              );
+            },
+          );
+
+          test(
+            'returns the average of the two middle values for an even-length list',
+            () {
+              final historicalCharges = [
+                historicalCharge(0, 100),
+                historicalCharge(30, 10),
+                historicalCharge(60, 20),
+                historicalCharge(90, 30),
+              ];
+
+              expect(
+                historicalCharges.medianValueIncVat,
+                25,
+              );
+            },
+          );
+
+          test(
+            'returns the middle value for an odd-length list',
+            () {
+              final historicalCharges = [
+                historicalCharge(0, 100),
+                historicalCharge(30, 10),
+                historicalCharge(60, 20),
+              ];
+
+              expect(
+                historicalCharges.medianValueIncVat,
+                20,
+              );
+            },
+          );
+
+          test(
+            'returns the value for a single charge',
+            () {
+              final historicalCharges = [historicalCharge(0, 10)];
+
+              expect(
+                historicalCharges.medianValueIncVat,
+                10,
+              );
+            },
+          );
+
+          test(
+            'throws a StateError for an empty list, like .median',
+            () {
+              expect(
+                () => <HistoricalCharge>[].medianValueIncVat,
                 throwsStateError,
               );
             },

@@ -69,20 +69,21 @@ class HistoricalChargeTodaysSummaryStatisticColumn extends StatelessWidget {
             label: 'Highest',
             value: max,
           ),
-        HistoricalChargeTodaysSummaryStatisticRow(
-          colorStops: colorStops,
-          label: 'Average',
-          value: sum / length,
-        ),
-        HistoricalChargeTodaysSummaryStatisticRow(
-          colorStops: colorStops,
-          label: 'Median',
-          value: todaysCharges.map(
-            (todaysCharge) {
-              return todaysCharge.valueIncVat;
-            },
-          ).median,
-        ),
+        // Guarded like Lowest/Highest above: `sum / length` is NaN and
+        // `.medianValueIncVat` throws on an empty list, so both must be
+        // skipped rather than rendered against no data.
+        if (todaysCharges.isNotEmpty) ...[
+          HistoricalChargeTodaysSummaryStatisticRow(
+            colorStops: colorStops,
+            label: 'Average',
+            value: sum / length,
+          ),
+          HistoricalChargeTodaysSummaryStatisticRow(
+            colorStops: colorStops,
+            label: 'Median',
+            value: todaysCharges.medianValueIncVat,
+          ),
+        ],
       ],
     );
   }
