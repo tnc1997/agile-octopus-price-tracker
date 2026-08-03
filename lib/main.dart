@@ -26,7 +26,7 @@ void main() {
         Provider(
           create: (context) {
             return NominatimApiClient(
-              client: clientViaUserAgent('AgileOctopusPriceTracker/0.6.0'),
+              client: clientViaUserAgent('AgileOctopusPriceTracker/0.7.0'),
             );
           },
         ),
