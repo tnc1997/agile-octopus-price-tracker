@@ -417,18 +417,22 @@ For pull requests:
 There is no automated version-bump or tagging step — releasing is a manual,
 two-part process:
 
-1. **Bump the version.** Update `version:` in `pubspec.yaml` (`<major>.<minor>.<patch>+<build>`)
-   on `main` and merge it.
-2. **Regenerate the changelog** from the Conventional Commit history since the
-   last release using [git-cliff](https://git-cliff.org/), and commit
-   `CHANGELOG.md` (see the `chore: Regenerate changelog using git-cliff` commits
-   in the repository's history for the pattern). Do not hand-edit
-   `CHANGELOG.md` otherwise — its content is only as accurate as the commit
-   messages it's generated from, which is why getting the `type`/scope/`!`
-   right in [Commit Messages and Pull Requests](#commit-messages-and-pull-requests)
+1. **Bump the version and regenerate the changelog in a single commit.**
+   Update `version:` in `pubspec.yaml` (`<major>.<minor>.<patch>+<build>`) and
+   regenerate `CHANGELOG.md` from the Conventional Commit history since the
+   last release using [git-cliff](https://git-cliff.org/):
+
+   ```shell
+   git cliff --output CHANGELOG.md --tag <version>
+   ```
+
+   Commit both changes together as `chore(release): prepare for v<version>`.
+   Do not hand-edit `CHANGELOG.md` otherwise — its content is only as
+   accurate as the commit messages it's generated from, which is why getting
+   the `type`/scope/`!` right in [Commit Messages and Pull Requests](#commit-messages-and-pull-requests)
    matters.
-3. **Tag the release commit** as `v<version>` (matching the version just set in
-   `pubspec.yaml`, e.g. `v0.6.0`) and push the tag:
+2. **Tag the release commit** as `v<version>` (matching the version just set in
+   `pubspec.yaml`, e.g. `v1.0.0`) and push the tag:
 
    ```shell
    git tag v<version>
