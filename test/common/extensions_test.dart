@@ -2,8 +2,6 @@ import 'package:agile_octopus_price_tracker/common/extensions.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:octopus_energy_api_client/v1.dart';
 
-import '../helpers.dart';
-
 void main() {
   group(
     'IterableDoubleExtensions',
@@ -65,8 +63,18 @@ void main() {
             'averages negative and positive values correctly',
             () {
               final historicalCharges = [
-                historicalCharge(0, -10),
-                historicalCharge(30, 10),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: -10,
+                  valueIncVat: -10,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 0, 30),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 0),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                ),
               ];
 
               expect(
@@ -80,8 +88,18 @@ void main() {
             'does not round to an integer when the mean is fractional',
             () {
               final historicalCharges = [
-                historicalCharge(0, 10),
-                historicalCharge(30, 15),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 0, 30),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 0),
+                  valueExcVat: 15,
+                  valueIncVat: 15,
+                ),
               ];
 
               expect(
@@ -95,9 +113,24 @@ void main() {
             'returns the mean of several historicalCharges',
             () {
               final historicalCharges = [
-                historicalCharge(0, 10),
-                historicalCharge(30, 20),
-                historicalCharge(60, 30),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 0, 30),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 0),
+                  valueExcVat: 20,
+                  valueIncVat: 20,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 1, 0),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 30),
+                  valueExcVat: 30,
+                  valueIncVat: 30,
+                ),
               ];
 
               expect(
@@ -110,7 +143,14 @@ void main() {
           test(
             'returns the value for a single charge',
             () {
-              final historicalCharges = [historicalCharge(0, 10)];
+              final historicalCharges = [
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                )
+              ];
 
               expect(
                 historicalCharges.averageValueIncVat,
@@ -138,9 +178,24 @@ void main() {
             'is unaffected by input order',
             () {
               final historicalCharges = [
-                historicalCharge(0, 30),
-                historicalCharge(30, 10),
-                historicalCharge(60, 20),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: 30,
+                  valueIncVat: 30,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 0, 30),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 0),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 1, 0),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 30),
+                  valueExcVat: 20,
+                  valueIncVat: 20,
+                ),
               ];
 
               expect(
@@ -154,10 +209,30 @@ void main() {
             'returns the average of the two middle values for an even-length list',
             () {
               final historicalCharges = [
-                historicalCharge(0, 100),
-                historicalCharge(30, 10),
-                historicalCharge(60, 20),
-                historicalCharge(90, 30),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: 100,
+                  valueIncVat: 100,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 0, 30),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 0),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 1, 0),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 30),
+                  valueExcVat: 20,
+                  valueIncVat: 20,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 1, 30),
+                  validTo: DateTime.utc(1970, 1, 1, 2, 0),
+                  valueExcVat: 30,
+                  valueIncVat: 30,
+                ),
               ];
 
               expect(
@@ -171,9 +246,24 @@ void main() {
             'returns the middle value for an odd-length list',
             () {
               final historicalCharges = [
-                historicalCharge(0, 100),
-                historicalCharge(30, 10),
-                historicalCharge(60, 20),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: 100,
+                  valueIncVat: 100,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 0, 30),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 0),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                ),
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970, 1, 1, 1, 0),
+                  validTo: DateTime.utc(1970, 1, 1, 1, 30),
+                  valueExcVat: 20,
+                  valueIncVat: 20,
+                ),
               ];
 
               expect(
@@ -186,7 +276,14 @@ void main() {
           test(
             'returns the value for a single charge',
             () {
-              final historicalCharges = [historicalCharge(0, 10)];
+              final historicalCharges = [
+                HistoricalCharge(
+                  validFrom: DateTime.utc(1970),
+                  validTo: DateTime.utc(1970, 1, 1, 0, 30),
+                  valueExcVat: 10,
+                  valueIncVat: 10,
+                )
+              ];
 
               expect(
                 historicalCharges.medianValueIncVat,
